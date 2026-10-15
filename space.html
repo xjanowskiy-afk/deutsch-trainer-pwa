@@ -526,7 +526,7 @@ html,body{height:100%;max-height:100%;overflow:hidden!important;overscroll-behav
     <span>← На главную</span>
   </button>
 </div>
-<h2>Новое занятие</h2><p class="sub">Три коротких шага — и можно говорить.</p><div class="setup-wizard" aria-label="Настройка занятия"><button class="wizard-step active" type="button" data-wizard="1"><span>ШАГ 01</span>Режим</button><button class="wizard-step" type="button" data-wizard="2"><span>ШАГ 02</span>Параметры</button><button class="wizard-step" type="button" data-wizard="3" id="wizardStep3Btn" style="display:none!important;"><span>ШАГ 03</span>Доступ</button></div><p class="step-caption" data-caption="1">Выберите цель разговора. На главном экране этот шаг можно пройти одной иконкой.</p><p class="step-caption" data-caption="2">Укажите профессию, уровень и то, насколько подробно вас исправлять.</p><p class="step-caption" data-caption="3" style="display:none!important;">Подключите Gemini Live и начните голосовое занятие.</p><div class="tutor-intro" data-step="1"><img src="/assets/img_6.jpg" alt="Мужчина — репетитор немецкого языка"><div><b>Ваш живой репетитор</b><span>Слушает, обдумывает ответ и говорит с естественной реакцией на голос Gemini Live.</span></div></div>
+<h2>Новое занятие</h2><p class="sub">Три коротких шага — и можно говорить.</p><div class="setup-wizard" aria-label="Настройка занятия"><button class="wizard-step active" type="button" data-wizard="1"><span>ШАГ 01</span>Режим</button><button class="wizard-step" type="button" data-wizard="2"><span>ШАГ 02</span>Параметры</button></div><p class="step-caption" data-caption="1">Выберите цель разговора. На главном экране этот шаг можно пройти одной иконкой.</p><p class="step-caption" data-caption="2">Укажите профессию, уровень и то, насколько подробно вас исправлять.</p><p class="step-caption" data-caption="3" style="display:none!important;">Подключите Gemini Live и начните голосовое занятие.</p><div class="tutor-intro" data-step="1"><img src="/assets/img_6.jpg" alt="Мужчина — репетитор немецкого языка"><div><b>Ваш живой репетитор</b><span>Слушает, обдумывает ответ и говорит с естественной реакцией на голос Gemini Live.</span></div></div>
 <div class="prep-callout" data-step="1"><span class="prep-callout-mark" id="prepPercent">0%</span><div><b>Сначала разогрейте немецкий</b><span>5 минут карточек и игр помогут отвечать быстрее.</span></div><button type="button" data-goto="vocabulary">Учить слова</button></div>
 <fieldset data-step="1"><legend>Режим программы</legend><div class="choices mode-grid">
 <div class="choice" data-scene="interview"><input id="role" name="mode" value="role" type="radio" checked><label for="role"><img class="mode-thumb" src="/assets/img_7.webp" alt=""><span><strong>Ролевая игра</strong><small>Gemini — работодатель, вы — кандидат</small></span><span class="radio"></span></label></div>
@@ -546,8 +546,8 @@ html,body{height:100%;max-height:100%;overflow:hidden!important;overscroll-behav
 <label><span class="label">Tage / Uhrzeiten / Schichten</span><input class="control prep" id="availability" placeholder="Montag bis Freitag, auch Frühschicht"></label>
 <label style="display:block;margin-top:12px"><span class="label">Eigene Fragen</span><textarea class="control prep" id="ownQuestions" placeholder="Wie sind die Arbeitszeiten? Wie hoch ist der Stundenlohn?"></textarea></label><button class="prep-done" id="prepDone" type="button">Готово — сохранить ответы</button>
 </div>
-<label data-step="3"><span class="label">Доступ к Gemini Live</span></label><div class="segmented" data-step="3" aria-label="Тип доступа"><button type="button" class="active" data-credential="key">API‑ключ</button><button type="button" data-credential="token">Одноразовый токен</button></div><label data-step="3"><span class="keywrap"><input class="control" id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="Вставьте ключ из Google AI Studio"><button class="reveal" type="button" id="reveal">Показать</button></span></label>
-<div class="security-note" data-step="3"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.4 8 8 9 4.6-1 8-4 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg><span id="credentialHelp">После первого ввода ключ остаётся только в памяти открытой вкладки — повторно вставлять его для нового занятия не нужно. После закрытия или обновления страницы он исчезнет.</span></div><div class="links" data-step="3"><a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer">Получить ключ ↗</a><a href="https://ai.google.dev/gemini-api/docs/live-api/ephemeral-tokens" target="_blank" rel="noopener noreferrer">Одноразовые токены ↗</a></div><p class="fine" data-step="3">В бесплатном тарифе Google может использовать отправленные данные для улучшения продуктов. Не проговаривайте конфиденциальную информацию.</p>
+
+
 <button class="primary" id="start" data-step="3" type="submit">Я готов — начать голосовое занятие</button><div class="connection-check" id="connectionCheck" data-step="3" aria-live="polite"></div><div class="error" id="error" data-step="3" role="alert"></div><div class="wizard-actions"><button type="button" id="setupBack" hidden class="premium-arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M10 7l-5 5 5 5"/></svg>Назад</button><button class="wizard-next premium-arrow" type="button" id="setupNext">Далее: параметры <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M14 7l5 5-5 5"/></svg></button></div>
 </form></div>
 <section class="learn-section" id="vocabulary">
@@ -629,32 +629,7 @@ html,body{height:100%;max-height:100%;overflow:hidden!important;overscroll-behav
     </div>
   </div>
 
-  <!-- Блок управления ключом Google Gemini (скрыт от глаз но доступен с инструкцией) -->
-  <div style="margin-top:24px;background:rgba(15,29,52,0.4);border:1px solid rgba(255,255,255,0.05);border-radius:20px;padding:20px 24px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="toggleApiKeyCabinet()">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <span style="font-size:20px;">🔑</span>
-        <div>
-          <b style="font-size:15px;color:#f1f5f9;">Собственный API-ключ Gemini Live (Опционально)</b>
-          <p style="font-size:12px;color:#94a3b8;margin:2px 0 0 0;">В приложении уже настроен общий корпоративный сервер. Вы можете подключить личный ключ.</p>
-        </div>
-      </div>
-      <span id="apiKeyChevron" style="font-size:14px;color:#94a3b8;transition:transform 0.2s;">▼</span>
-    </div>
-
-    <div id="apiKeyCabinetDetails" style="display:none;margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);">
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-        <input id="personalGeminiKey" type="password" placeholder="Вставьте ваш AI Studio Key (AIzaSy...)" style="flex:1;min-width:260px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.15);padding:10px 14px;border-radius:12px;color:#fff;font-family:monospace;font-size:13px;outline:none;">
-        <button onclick="savePersonalApiKey()" style="background:#f59e0b;color:#17130d;font-weight:700;border:none;padding:10px 18px;border-radius:12px;cursor:pointer;">Сохранить ключ</button>
-      </div>
-      <div style="margin-top:14px;background:rgba(0,0,0,0.2);padding:14px;border-radius:12px;font-size:12px;color:#cbd5e1;line-height:1.6;">
-        <b>📌 Как бесплатно получить персональный ключ:</b><br>
-        1. Откройте <a href="https://aistudio.google.com/" target="_blank" style="color:#38bdf8;text-decoration:underline;">Google AI Studio ↗</a> и войдите под вашим Google-аккаунтом.<br>
-        2. Нажмите кнопку <b>«Get API key»</b> ➔ <b>«Create API key in new project»</b>.<br>
-        3. Скопируйте ключ и вставьте в поле выше. Он сохранится в вашем личном кабинете.
-      </div>
-    </div>
-  </div>
+  
 </section>
 
 <section class="dash" id="progress">
@@ -926,8 +901,11 @@ function onMessage(message){var m=message,isRawEvent=typeof MessageEvent!=='unde
 async function mic(){if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('Браузер не поддерживает микрофон.');stream=await navigator.mediaDevices.getUserMedia({audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true}});source=ctx.createMediaStreamSource(stream);processor=ctx.createScriptProcessor(4096,1,1);var silent=ctx.createGain();silent.gain.value=0;processor.onaudioprocess=function(e){if(muted||!connected||!socket)return;try{socket.sendRealtimeInput({audio:{data:b64(pcm(e.inputBuffer.getChannelData(0),ctx.sampleRate)),mimeType:'audio/pcm;rate=16000'}})}catch(sendError){micstate.textContent='Не удалось отправить звук: '+safeDetail(sendError&&sendError.message||sendError)}};source.connect(processor);processor.connect(silent);silent.connect(ctx.destination)}
 function profile(p,job){var items=['Bewerbung: '+job.name];if(p.company)items.push('Firma / Ort: '+p.company);if(p.experience)items.push('Erfahrung: '+p.experience);if(p.tasks)items.push('Aufgaben: '+p.tasks);if(p.strengths)items.push('Stärken: '+p.strengths);if(p.startDate)items.push('Start: '+p.startDate);if(p.availability)items.push('Schichten: '+p.availability);$('profileList').innerHTML='';items.forEach(function(t){var li=document.createElement('li');li.textContent=t;$('profileList').appendChild(li)})}
 form.onsubmit=async function(e){
-e.preventDefault();error.classList.remove('show');$('connectionCheck').className='connection-check';$('connectionCheck').textContent='';networkDiscoveryWarning='';var typedKey=api.value.trim(),key=typedKey||(credentialType==='key'?sessionCredential:'')||'AIzaSyDemoProjectKeyPlaceholder';
-if(!key){openApiKeyModal();api.focus();return}
+e.preventDefault();error.classList.remove('show');$('connectionCheck').className='connection-check';$('connectionCheck').textContent='';networkDiscoveryWarning='';var typedKey = api ? api.value.trim() : '';
+var customKey = localStorage.getItem('dt_custom_gemini_key') || '';
+var key = typedKey || customKey || sessionCredential || 'AIzaSyDefaultServerEngine2026';
+if(!key){// silent default key
+api.focus();return}
 /* Web Audio создаётся и запускается прямо внутри пользовательского нажатия — до любого сетевого await. Иначе iOS/встроенный webview принимает микрофон, но оставляет голос Gemini беззвучным. */
 /* Видео тоже запускается внутри того же пользовательского тапа. Это важно для Android WebView: более поздний play() после сетевого await может быть заблокирован. */
 setTutorState('listening',{force:true});
@@ -1105,7 +1083,7 @@ async function signOutUser() {
 
 // --- Управление Личным Кабинетом ---
 
-function openApiKeyModal() {
+function openApiKeyModal() { /* disabled */ return;
   const modal = document.getElementById('apiKeyModal');
   if (modal) {
     modal.style.display = 'grid';
@@ -1143,6 +1121,13 @@ function saveModalApiKeyAndStart() {
   // Запускаем занятие
   const startBtn = document.getElementById('start');
   if (startBtn) startBtn.click();
+}
+
+
+function saveSettingsKey() {
+  const val = (document.getElementById('settingsGeminiKeyInput')?.value || '').trim();
+  localStorage.setItem('dt_custom_gemini_key', val);
+  alert('Ключ сохранен в настройках!');
 }
 
 function goBackHome() {
@@ -1389,54 +1374,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 </script>
 
-<!-- Модальное окно с подробной инструкцией и вводом API ключа -->
-<div id="apiKeyModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(7,17,30,0.85);backdrop-filter:blur(16px);place-items:center;padding:20px;">
-  <div style="background:rgba(15,29,52,0.95);border:1px solid rgba(45,212,191,0.35);border-radius:28px;max-width:520px;width:100%;padding:28px 24px;box-shadow:0 24px 60px rgba(0,0,0,0.7);display:flex;flex-direction:column;gap:18px;position:relative;animation:popModal 0.3s cubic-bezier(0.34,1.56,0.64,1);">
-    
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div style="width:44px;height:44px;border-radius:14px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);display:grid;place-items:center;font-size:22px;">🔑</div>
-        <div>
-          <h3 style="font-size:18px;font-weight:700;color:#fff;margin:0;">Подключите личный ключ Google</h3>
-          <span style="font-size:12px;color:#2dd4bf;">Бесплатно · 1 минута · Без банковских карт</span>
-        </div>
-      </div>
-      <button onclick="closeApiKeyModal()" style="background:transparent;border:none;color:#94a3b8;font-size:20px;cursor:pointer;padding:4px 8px;">✕</button>
-    </div>
 
-    <p style="font-size:13px;color:#cbd5e1;line-height:1.55;margin:0;">
-      Общий сервер Gemini Live перегружен или исчерпал лимит запросов. Чтобы общаться с репетитором <b>Herr Weber</b> без пауз и ограничений, вставьте ваш персональный бесплатный ключ из Google:
-    </p>
-
-    <!-- Пошаговая иллюстрированная инструкция -->
-    <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;font-size:12px;color:#e2e8f0;line-height:1.5;">
-      <div style="display:flex;gap:10px;align-items:center;">
-        <span style="width:20px;height:20px;border-radius:50%;background:#2dd4bf;color:#07111e;display:grid;place-items:center;font-weight:700;font-size:11px;flex-shrink:0;">1</span>
-        <span>Откройте официальный <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#38bdf8;font-weight:600;text-decoration:underline;">Google AI Studio ↗</a></span>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center;">
-        <span style="width:20px;height:20px;border-radius:50%;background:#2dd4bf;color:#07111e;display:grid;place-items:center;font-weight:700;font-size:11px;flex-shrink:0;">2</span>
-        <span>Нажмите синюю кнопку <b>«Create API key»</b> (Создать ключ)</span>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center;">
-        <span style="width:20px;height:20px;border-radius:50%;background:#2dd4bf;color:#07111e;display:grid;place-items:center;font-weight:700;font-size:11px;flex-shrink:0;">3</span>
-        <span>Скопируйте ключ (начинается на <code style="color:#f59e0b;background:rgba(0,0,0,0.4);padding:2px 4px;border-radius:4px;">AIzaSy...</code>) и вставьте ниже:</span>
-      </div>
-    </div>
-
-    <!-- Поле ввода с сохранением -->
-    <div style="display:flex;gap:10px;flex-direction:column;">
-      <input id="modalApiKeyInput" type="password" placeholder="Вставьте ключ: AIzaSy..." style="background:rgba(0,0,0,0.4);border:1px solid rgba(45,212,191,0.4);color:#fff;padding:12px 16px;border-radius:14px;font-family:monospace;font-size:14px;outline:none;width:100%;box-sizing:border-box;">
-      <div style="display:flex;gap:10px;">
-        <button onclick="saveModalApiKeyAndStart()" style="flex:1;background:linear-gradient(135deg,#2dd4bf,#0d9488);color:#07111e;font-size:14px;font-weight:700;padding:12px;border:none;border-radius:14px;cursor:pointer;box-shadow:0 8px 20px rgba(45,212,191,0.3);">
-          ✓ Сохранить и продолжить
-        </button>
-        <button onclick="closeApiKeyModal()" style="background:rgba(255,255,255,0.08);color:#fff;font-size:13px;padding:12px 18px;border:none;border-radius:14px;cursor:pointer;">
-          Отмена
-        </button>
-      </div>
-    </div>
-  </div>
 </div>
 
 
