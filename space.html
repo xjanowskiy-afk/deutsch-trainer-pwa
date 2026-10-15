@@ -977,8 +977,47 @@ const SUPABASE_URL = 'https://tnjhbtrfugrdggqwsygn.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_8XggGtraxl1EyLX9zwFyZQ_-vcD3SAQ';
 let supabaseClient = null;
 
+// Многоуровневое долговременное хранилище для iOS PWA (localStorage + Cookie Fallback)
+function getPersistentItem(key) {
+  try {
+    const val = localStorage.getItem(key);
+    if (val) return val;
+  } catch(e) {}
+  // Cookie fallback для iOS PWA isolated sandbox
+  const match = document.cookie.match(new RegExp('(^| )' + key + '=([^;]+)'));
+  if (match) return decodeURIComponent(match[2]);
+  return null;
+}
+
+function setPersistentItem(key, val) {
+  try { localStorage.setItem(key, val); } catch(e) {}
+  try {
+    // 365 дней жизни куки
+    const d = new Date();
+    d.setTime(d.getTime() + (365*24*60*60*1000));
+    document.cookie = key + '=' + encodeURIComponent(val) + ';expires=' + d.toUTCString() + ';path=/;SameSite=Lax';
+  } catch(e) {}
+}
+
+const customStorage = {
+  getItem: (key) => getPersistentItem(key),
+  setItem: (key, value) => setPersistentItem(key, value),
+  removeItem: (key) => {
+    try { localStorage.removeItem(key); } catch(e) {}
+    document.cookie = key + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+  }
+};
+
 if (window.supabase) {
-  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      storage: customStorage,
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      flowType: 'pkce'
+    }
+  });
 }
 
 window.currentUser = null;
@@ -986,6 +1025,14 @@ window.currentUser = null;
 function unlockApp(user) {
   console.log('Unlocking app for:', user?.email);
   window.currentUser = user;
+  
+  if (user) {
+    // Явно кэшируем данные пользователя для мгновенного входа на iPhone без задержек
+    setPersistentItem('dt_cached_user_email', user.email || '');
+    setPersistentItem('dt_cached_user_name', user.user_metadata?.full_name || '');
+    setPersistentItem('dt_cached_user_avatar', user.user_metadata?.avatar_url || '');
+    setPersistentItem('dt_cached_user_id', user.id || '');
+  }
   
   // Прячем экран авторизации
   const splash = document.getElementById('premiumSplash');
@@ -1296,6 +1343,21 @@ window.addEventListener('DOMContentLoaded', async () => {
   if (!supabaseClient) {
     console.error('Supabase client failed to load');
     return;
+  }
+
+  
+  // Мгновенное восстановление на iPhone (PWA Standalone) из кэшированных данных
+  const cachedEmail = getPersistentItem('dt_cached_user_email');
+  if (cachedEmail) {
+    const mockUser = {
+      id: getPersistentItem('dt_cached_user_id') || 'cached',
+      email: cachedEmail,
+      user_metadata: {
+        full_name: getPersistentItem('dt_cached_user_name') || cachedEmail.split('@')[0],
+        avatar_url: getPersistentItem('dt_cached_user_avatar') || ''
+      }
+    };
+    unlockApp(mockUser);
   }
 
   // Реактивный слушатель событий
