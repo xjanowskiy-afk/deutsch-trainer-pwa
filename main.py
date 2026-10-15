@@ -9,6 +9,16 @@ from typing import Dict, Any
 
 app = FastAPI(title="Deutsch Trainer API & PWA")
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.gzip import GZipMiddleware
+
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+ASSETS_DIR = os.path.join(BASE_DIR, "assets")
+os.makedirs(ASSETS_DIR, exist_ok=True)
+app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
