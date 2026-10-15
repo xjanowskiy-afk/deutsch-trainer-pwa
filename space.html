@@ -581,6 +581,77 @@ initDiagnostics();
 })();
 </script>
 <script>(function(){var splash=document.getElementById('premiumSplash');function closeSplash(){if(!splash)return;splash.classList.add('is-hidden');setTimeout(function(){if(splash)splash.remove()},850)}if(document.readyState==='complete'){setTimeout(closeSplash,700)}else{window.addEventListener('load',function(){setTimeout(closeSplash,700)},{once:true})}})();</script>
+
+<!-- ================= ПРЕМИАЛЬНЫЙ ЛИЧНЫЙ КАБИНЕТ (SLIDE DRAWER) ================= -->
+<div id="userCabinetDrawer" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(5,13,24,0.7);backdrop-filter:blur(14px);justify-content:flex-end;">
+  <div style="background:linear-gradient(180deg, #0d1e34 0%, #071220 100%);width:min(440px, 100%);height:100%;border-left:1px solid rgba(45,212,191,0.25);box-shadow:-20px 0 60px rgba(0,0,0,0.8);display:flex;flex-direction:column;padding:28px 24px;box-sizing:border-box;overflow-y:auto;position:relative;animation:slideCabinet 0.35s cubic-bezier(0.16,1,0.3,1);">
+    
+    <!-- Шапка кабинета -->
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:18px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:22px;">👤</span>
+        <b style="font-size:17px;color:#f8fafc;letter-spacing:-0.01em;">Личный кабинет</b>
+      </div>
+      <button type="button" onclick="closeUserCabinet()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#94a3b8;width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer;display:grid;place-items:center;">✕</button>
+    </div>
+
+    <!-- Карточка пользователя -->
+    <div style="display:flex;align-items:center;gap:16px;margin-top:24px;background:rgba(15,29,52,0.6);border:1px solid rgba(45,212,191,0.2);padding:18px;border-radius:22px;">
+      <img id="cabinetAvatarBig" src="" style="width:64px;height:64px;border-radius:50%;border:2px solid #2dd4bf;object-fit:cover;box-shadow:0 6px 20px rgba(45,212,191,0.3);">
+      <div style="flex:1;min-width:0;">
+        <input id="cabinetEditName" type="text" value="" placeholder="Ваше имя" style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.12);color:#fff;font-size:16px;font-weight:700;padding:6px 10px;border-radius:10px;outline:none;width:100%;box-sizing:border-box;margin-bottom:6px;">
+        <div id="cabinetEmailTxt" style="font-size:12px;color:#94a3b8;word-break:break-all;"></div>
+        <div id="cabinetMemberSince" style="font-size:11px;color:#2dd4bf;margin-top:4px;">● Облачный аккаунт Supabase</div>
+      </div>
+    </div>
+
+    <button type="button" onclick="saveCabinetName()" style="margin-top:10px;background:#2dd4bf;color:#07111e;font-size:12px;font-weight:700;border:none;padding:8px;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+      Сохранить имя
+    </button>
+
+    <!-- Карточки статистики ученика -->
+    <h4 style="font-size:13px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin:28px 0 12px 0;">Ваш прогресс и результаты</h4>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="background:rgba(15,29,52,0.7);border:1px solid rgba(255,255,255,0.06);padding:14px;border-radius:18px;">
+        <span style="font-size:11px;color:#94a3b8;display:block;">Занятий</span>
+        <strong id="cabStatLessons" style="font-size:24px;color:#f8fafc;font-weight:800;">0</strong>
+        <span style="font-size:11px;color:#2dd4bf;display:block;">с Herr Weber</span>
+      </div>
+      <div style="background:rgba(15,29,52,0.7);border:1px solid rgba(255,255,255,0.06);padding:14px;border-radius:18px;">
+        <span style="font-size:11px;color:#94a3b8;display:block;">Минут речи</span>
+        <strong id="cabStatMins" style="font-size:24px;color:#38bdf8;font-weight:800;">0</strong>
+        <span style="font-size:11px;color:#38bdf8;display:block;">в диалогах</span>
+      </div>
+      <div style="background:rgba(15,29,52,0.7);border:1px solid rgba(255,255,255,0.06);padding:14px;border-radius:18px;">
+        <span style="font-size:11px;color:#94a3b8;display:block;">Ответов</span>
+        <strong id="cabStatReplies" style="font-size:24px;color:#eab308;font-weight:800;">0</strong>
+        <span style="font-size:11px;color:#eab308;display:block;">реплик</span>
+      </div>
+      <div style="background:rgba(15,29,52,0.7);border:1px solid rgba(255,255,255,0.06);padding:14px;border-radius:18px;">
+        <span style="font-size:11px;color:#94a3b8;display:block;">Синхронизация</span>
+        <strong style="font-size:14px;color:#10b981;font-weight:700;display:block;margin-top:6px;">● Активна</strong>
+        <span style="font-size:10px;color:#64748b;">Supabase 24/7</span>
+      </div>
+    </div>
+
+    <!-- Кнопка выхода -->
+    <div style="margin-top:auto;padding-top:24px;">
+      <button type="button" onclick="logoutGoogle()" style="width:100%;background:rgba(239,68,68,0.12);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);padding:12px;border-radius:16px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Выйти из аккаунта
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<style>
+@keyframes slideCabinet {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+</style>
+
 <!-- ================= GOOGLE AUTH WIDGET ================= -->
 <div id="googleAuthTopBar" style="position:fixed;top:18px;right:24px;z-index:9999;font-family:inherit;">
   <div id="authGuestBox">
@@ -591,7 +662,7 @@ initDiagnostics();
   </div>
 
   <div id="authUserBox" style="display:none;">
-    <div style="display:flex;align-items:center;gap:10px;background:rgba(15,29,52,0.92);border:1px solid rgba(45,212,191,0.4);padding:6px 14px;border-radius:28px;backdrop-filter:blur(16px);box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+    <div onclick="openUserCabinet()" style="display:flex;align-items:center;gap:10px;background:rgba(15,29,52,0.92);border:1px solid rgba(45,212,191,0.4);padding:6px 14px;border-radius:28px;backdrop-filter:blur(16px);box-shadow:0 8px 24px rgba(0,0,0,0.4);cursor:pointer;" title="Нажмите, чтобы открыть личный кабинет">
       <img id="userAvatarImg" src="" style="width:30px;height:30px;border-radius:50%;border:1px solid #2dd4bf;object-fit:cover;">
       <div style="display:flex;flex-direction:column;">
         <span id="userNameTxt" style="font-size:12px;font-weight:700;color:#f1f5f9;line-height:1.2;">Пользователь</span>
@@ -633,7 +704,59 @@ async function logoutGoogle() {
   window.location.reload();
 }
 
+
+let activeCabinetUser = null;
+
+function openUserCabinet() {
+  const drawer = document.getElementById('userCabinetDrawer');
+  if (!drawer) return;
+  drawer.style.display = 'flex';
+  refreshDrawerData();
+}
+
+function closeUserCabinet() {
+  const drawer = document.getElementById('userCabinetDrawer');
+  if (drawer) drawer.style.display = 'none';
+}
+
+function refreshDrawerData() {
+  if (!activeCabinetUser) {
+    const raw = localStorage.getItem('dt_saved_user');
+    if (raw) try { activeCabinetUser = JSON.parse(raw); } catch(e) {}
+  }
+  if (!activeCabinetUser) return;
+
+  const name = activeCabinetUser.name || 'Ученик';
+  const email = activeCabinetUser.email || '';
+  const avatar = activeCabinetUser.avatar || 'https://www.gravatar.com/avatar/?d=mp';
+
+  document.getElementById('cabinetEditName').value = name;
+  document.getElementById('cabinetEmailTxt').textContent = email;
+  document.getElementById('cabinetAvatarBig').src = avatar;
+
+  // Статистика сессий
+  const sList = window.sessions || [];
+  const totalSec = sList.reduce((a,x) => a + (x.seconds||0), 0);
+  const totalTurns = sList.reduce((a,x) => a + (x.turns||0), 0);
+
+  document.getElementById('cabStatLessons').textContent = sList.length;
+  document.getElementById('cabStatMins').textContent = Math.round(totalSec / 60);
+  document.getElementById('cabStatReplies').textContent = totalTurns;
+}
+
+function saveCabinetName() {
+  const val = (document.getElementById('cabinetEditName')?.value || '').trim();
+  if (!val) return;
+  if (activeCabinetUser) {
+    activeCabinetUser.name = val;
+    localStorage.setItem('dt_saved_user', JSON.stringify(activeCabinetUser));
+    document.getElementById('userNameTxt').textContent = val;
+    alert('Имя успешно сохранено в вашем профиле!');
+  }
+}
+
 function renderAuthProfile(user) {
+  if(user) activeCabinetUser = { name: user.user_metadata?.full_name || user.email?.split("@")[0], email: user.email, avatar: user.user_metadata?.avatar_url, id: user.id };
   const guest = document.getElementById('authGuestBox');
   const userBox = document.getElementById('authUserBox');
   if (!guest || !userBox) return;
