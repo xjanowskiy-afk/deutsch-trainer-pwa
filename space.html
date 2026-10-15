@@ -256,7 +256,28 @@ html,body{height:100%;max-height:100%;overflow:hidden!important;overscroll-behav
 <span class="navspacer"></span><button class="navbtn" data-nav="settings"><svg class="settings-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span>Настройки</span></button>
 </nav>
 <div class="more-menu" id="moreMenu" aria-hidden="true"><div class="more-menu-head"><div><span>Разделы</span><strong>Что открыть?</strong></div><button type="button" id="closeMore" class="icon-only" aria-label="Закрыть меню"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div class="more-menu-grid"><button type="button" data-more-view="progress"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19V3"/></svg><span><b>Прогресс</b><small>Результаты занятий</small></span></button><button type="button" data-more-view="materials"><svg viewBox="0 0 24 24"><path d="M5 3h11a3 3 0 0 1 3 3v15H8a3 3 0 0 1-3-3V3Z"/><path d="M5 17h11M9 7h6M9 11h6"/></svg><span><b>Материалы</b><small>Фразы и памятки</small></span></button><button type="button" data-more-view="diagnostics"><svg viewBox="0 0 24 24"><path d="M9 3h6v3l4.5 8.2A4 4 0 0 1 16 20H8a4 4 0 0 1-3.5-5.8L9 6V3Z"/><path d="M7 14h10M9 17h6"/></svg><span><b>Диагностика</b><small>Видео и звук</small></span></button><button type="button" data-more-view="settings"><svg class="settings-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span><b>Настройки</b><small>Сценарий и доступ</small></span></button></div></div>
-<div class="appbar"><div class="appcontext"><div><b id="viewTitle">Живой разговор</b><small id="viewSubtitle">Gemini Live · Deutsch A1–B1</small></div></div><div class="status"><span class="dot" id="statusDot"></span><span id="statusText">Настройте занятие</span></div><button class="linkbtn" id="topEnd" hidden>Завершить</button></div>
+<div class="appbar"><div class="appcontext"><div><b id="viewTitle">Живой разговор</b><small id="viewSubtitle">Gemini Live · Deutsch A1–B1</small></div></div><div class="status"><span class="dot" id="statusDot"></span><span id="statusText">Настройте занятие</span></div><button class="linkbtn" id="topEnd" hidden>Завершить</button>
+  <!-- Встроенный профиль пользователя в единой строке appbar -->
+  <div id="integratedUserSlot" style="display:flex;align-items:center;margin-left:auto;">
+    <div id="authGuestBox">
+      <button type="button" onclick="loginWithGoogle()" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.06);color:#f1f5f9;border:1px solid rgba(245,158,11,0.35);padding:6px 14px;border-radius:18px;font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(10px);box-shadow:0 4px 16px rgba(0,0,0,0.3);transition:all 0.2s;">
+        <svg width="15" height="15" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16c1.8 3.7 5.6 7 10.1 7z"/></svg>
+        Войти
+      </button>
+    </div>
+
+    <div id="authUserBox" style="display:none;">
+      <div onclick="openUserCabinet()" style="display:flex;align-items:center;gap:8px;background:rgba(15,26,42,0.85);border:1px solid rgba(245,158,11,0.35);padding:4px 10px;border-radius:20px;backdrop-filter:blur(12px);box-shadow:0 4px 16px rgba(0,0,0,0.3);cursor:pointer;max-width:210px;" title="Открыть личный кабинет">
+        <img id="userAvatarImg" src="" style="width:26px;height:26px;border-radius:50%;border:1.5px solid #f59e0b;object-fit:cover;flex-shrink:0;">
+        <div style="display:flex;flex-direction:column;min-width:0;overflow:hidden;">
+          <span id="userNameTxt" style="font-size:11px;font-weight:700;color:#f8fafc;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Пользователь</span>
+          <span style="font-size:9px;color:var(--teal, #2dd4bf);line-height:1;">Личный кабинет</span>
+        </div>
+        <button type="button" onclick="event.stopPropagation();logoutGoogle()" title="Выйти" style="background:transparent;border:none;color:#94a3b8;font-size:12px;cursor:pointer;padding:2px 4px;margin-left:2px;flex-shrink:0;">✕</button>
+      </div>
+    </div>
+  </div>
+</div>
 <section class="landing" id="training">
 <section class="home-menu" id="homeMenu" aria-labelledby="homeTitle">
 <div class="path-top"><div class="path-course"><span class="path-course-badge">DE</span><div><b>Немецкий для работы</b><span>Маршрут A1–B1 · учитесь в своём темпе</span></div></div><div class="path-stats"><button class="path-stat level-selector" id="quickLevel" type="button" title="Изменить уровень"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 18 6.5v5c0 4.2-2.4 7.3-6 9.5-3.6-2.2-6-5.3-6-9.5v-5L12 3Z"/><path d="M9.2 14.5 12 8l2.8 6.5M10.2 12.2h3.6"/></svg><span><small>Уровень</small><strong id="homeLevel">A2</strong></span><svg class="level-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button><div class="path-stat" title="Прогресс сохраняется только в открытой вкладке"><svg viewBox="0 0 24 24"><path d="M12 3 9 9l-6 1 4.5 4.5L6.5 21l5.5-3 5.5 3-1-6.5L21 10l-6-1-3-6Z"/></svg><span>Сегодня</span> 0 XP</div></div></div>
@@ -732,26 +753,7 @@ initDiagnostics();
 }
 </style>
 
-<!-- ================= GOOGLE AUTH WIDGET ================= -->
-<div id="googleAuthTopBar" style="position:fixed;top:18px;right:24px;z-index:9999;font-family:inherit;">
-  <div id="authGuestBox">
-    <button type="button" onclick="loginWithGoogle()" style="display:flex;align-items:center;gap:10px;background:rgba(15,29,52,0.92);color:#fff;border:1px solid rgba(45,212,191,0.35);padding:10px 18px;border-radius:24px;font-size:13px;font-weight:700;cursor:pointer;backdrop-filter:blur(16px);box-shadow:0 8px 24px rgba(0,0,0,0.4);transition:all 0.2s;">
-      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16c1.8 3.7 5.6 7 10.1 7z"/></svg>
-      Войти через Google
-    </button>
-  </div>
 
-  <div id="authUserBox" style="display:none;">
-    <div onclick="openUserCabinet()" style="display:flex;align-items:center;gap:10px;background:rgba(15,26,42,0.85);border:1px solid rgba(245,158,11,0.3);padding:6px 14px;border-radius:20px;backdrop-filter:blur(16px);box-shadow:0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);cursor:pointer;transition:all 0.2s cubic-bezier(0.16,1,0.3,1);" title="Нажмите, чтобы открыть личный кабинет">
-      <img id="userAvatarImg" src="" style="width:30px;height:30px;border-radius:50%;border:1px solid #2dd4bf;object-fit:cover;">
-      <div style="display:flex;flex-direction:column;">
-        <span id="userNameTxt" style="font-size:12px;font-weight:700;color:#f1f5f9;line-height:1.2;">Пользователь</span>
-        <span style="font-size:10px;color:#2dd4bf;">Личный кабинет</span>
-      </div>
-      <button type="button" onclick="logoutGoogle()" title="Выйти" style="background:transparent;border:none;color:#94a3b8;font-size:14px;cursor:pointer;padding:2px 6px;margin-left:4px;">✕</button>
-    </div>
-  </div>
-</div>
 
 <script>
 // --- Неприкосновенная интеграция Supabase Auth ---
