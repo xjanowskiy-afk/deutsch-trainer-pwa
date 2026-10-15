@@ -87,6 +87,13 @@ async def save_user_progress(payload: ProgressPayload):
         json.dump(data, f, ensure_ascii=False, indent=2)
     return {"status": "ok", "saved": True, "count": len(payload.sessions)}
 
+
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+
+@app.get("/api/config/gemini")
+async def get_gemini_config():
+    return {"status": "ok", "key": GEMINI_API_KEY}
+
 @app.get("/health")
 @app.get("/api/keep-alive")
 async def keep_alive():

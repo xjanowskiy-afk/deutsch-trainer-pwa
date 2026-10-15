@@ -903,7 +903,7 @@ function profile(p,job){var items=['Bewerbung: '+job.name];if(p.company)items.pu
 form.onsubmit=async function(e){
 e.preventDefault();error.classList.remove('show');$('connectionCheck').className='connection-check';$('connectionCheck').textContent='';networkDiscoveryWarning='';var typedKey = api ? api.value.trim() : '';
 var customKey = localStorage.getItem('dt_custom_gemini_key') || '';
-var key = typedKey || customKey || sessionCredential || 'AIzaSyDefaultServerEngine2026';
+var key = typedKey || customKey || sessionCredential || serverGeminiKey;
 if(!key){// silent default key
 api.focus();return}
 /* Web Audio создаётся и запускается прямо внутри пользовательского нажатия — до любого сетевого await. Иначе iOS/встроенный webview принимает микрофон, но оставляет голос Gemini беззвучным. */
@@ -1303,6 +1303,22 @@ async function syncSessionsToCloud(userId, currentSessions) {
 }
 
 // Запуск при открытии страницы
+
+let serverGeminiKey = '';
+async function fetchServerGeminiKey() {
+  try {
+    const res = await fetch('/api/config/gemini');
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.key) {
+        serverGeminiKey = data.key;
+        console.log('Gemini Live server engine ready!');
+      }
+    }
+  } catch(e) {}
+}
+fetchServerGeminiKey();
+
 window.addEventListener('DOMContentLoaded', async () => {
 
   document.querySelectorAll('.navbtn').forEach(btn => {
