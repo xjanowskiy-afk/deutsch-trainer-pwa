@@ -4,21 +4,23 @@ import httpx
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+ASSETS_DIR = os.path.join(BASE_DIR, "assets")
+os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(ASSETS_DIR, exist_ok=True)
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://tnjhbtrfugrdggqwsygn.supabase.co")
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "sb_publishable_8XggGtraxl1EyLX9zwFyZQ_-vcD3SAQ")
+
 app = FastAPI(title="Deutsch Trainer API & PWA")
 
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.gzip import GZipMiddleware
-
 app.add_middleware(GZipMiddleware, minimum_size=1000)
-
-ASSETS_DIR = os.path.join(BASE_DIR, "assets")
-os.makedirs(ASSETS_DIR, exist_ok=True)
-app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
-
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,12 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(BASE_DIR, "data")
-os.makedirs(DATA_DIR, exist_ok=True)
-
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://tnjhbtrfugrdggqwsygn.supabase.co")
-SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "sb_publishable_8XggGtraxl1EyLX9zwFyZQ_-vcD3SAQ")
+app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
 
 class ProgressPayload(BaseModel):
     user_id: str
@@ -66,7 +63,6 @@ async def serve_icon_512():
 async def serve_apple_icon():
     return FileResponse(os.path.join(BASE_DIR, "apple-touch-icon.png"), media_type="image/png")
 
-# --- Cloud User Progress Endpoints (Auto-managed for 100% reliability) ---
 @app.get("/api/user/{user_id}/progress")
 async def get_user_progress(user_id: str):
     user_file = os.path.join(DATA_DIR, f"{user_id}.json")
@@ -91,7 +87,6 @@ async def save_user_progress(payload: ProgressPayload):
         json.dump(data, f, ensure_ascii=False, indent=2)
     return {"status": "ok", "saved": True, "count": len(payload.sessions)}
 
-# Anti-Sleep / Keep-Alive endpoint for UptimeRobot
 @app.get("/health")
 @app.get("/api/keep-alive")
 async def keep_alive():
