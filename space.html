@@ -6,6 +6,20 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Deutsch">
+  <!-- Open Graph & Social Sharing Cards -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://deutsch-trainer-pwa.onrender.com/">
+  <meta property="og:title" content="Deutsch Trainer — Персональный репетитор немецкого">
+  <meta property="og:description" content="Интерактивная практика разговорного немецкого языка A1-B1 с виртуальным репетитором Herr Weber, тренажёром речи и сохранением прогресса.">
+  <meta property="og:image" content="https://deutsch-trainer-pwa.onrender.com/assets/img_1.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Deutsch Trainer — Немецкий для жизни и работы">
+  <meta name="twitter:description" content="Разговаривайте на немецком уверенно. Живой голосовой коуч Herr Weber, интервальное повторение и подготовка к работе в Германии.">
+  <meta name="twitter:image" content="https://deutsch-trainer-pwa.onrender.com/assets/img_1.jpg">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.json">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -285,6 +299,89 @@ html,body{height:100%;max-height:100%;overflow:hidden!important;overscroll-behav
 }
 </style>
 
+
+<style>
+/* Мобильная адаптация для смартфонов (iOS Safari & Android Chrome) */
+@media (max-width: 768px) {
+  /* Нижняя панель навигации под палец */
+  .program-nav {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    height: 64px !important;
+    padding: 4px 6px !important;
+    border-radius: 22px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+    z-index: 900 !important;
+  }
+  
+  .program-nav:before {
+    display: none !important;
+  }
+  
+  .navbtn {
+    min-height: 54px !important;
+    width: auto !important;
+    flex: 1 !important;
+    padding: 4px 2px !important;
+    font-size: 10px !important;
+  }
+
+  .navbtn svg {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  /* Кнопка назад в шапке при переходе во внутренние экраны */
+  .mobile-back-header {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(10, 22, 38, 0.7);
+    border-radius: 16px;
+    margin-bottom: 14px;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* Защита от перекрытия контента нижним меню */
+  body {
+    padding-bottom: 84px !important;
+  }
+}
+
+@keyframes popModal {
+  0% { transform: scale(0.92); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Кнопка Назад для всех устройств */
+.app-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.app-back-btn:hover {
+  background: rgba(45, 212, 191, 0.15);
+  border-color: rgba(45, 212, 191, 0.4);
+  color: #2dd4bf;
+  transform: translateX(-3px);
+}
+</style>
+
 </head>
 <body data-view="home"><div class="ambient-backdrop" aria-hidden="true"><canvas id="ambientParticles"></canvas></div><div class="premium-splash" id="premiumSplash" role="status" aria-label="Загрузка тренажёра"><div class="splash-inner"><div class="splash-copy"><div class="splash-kicker">Deutsch · Persönliches Training</div><h2>Уверенная речь начинается здесь</h2><p>Персональная практика немецкого для работы, собеседований и профессионального общения.</p>
 <div class="splash-line" aria-hidden="true"></div>
@@ -363,7 +460,16 @@ html,body{height:100%;max-height:100%;overflow:hidden!important;overscroll-behav
 <section class="learn-section" id="games"><div class="section-illustration"><div class="section-illustration-copy"><p class="kicker">Vor dem Sprechen</p><h2>Игровая разминка</h2><p>Собирайте фразы, находите пары и закрепляйте лексику перед голосовым занятием.</p></div><img src="/assets/img_11.webp" alt="Золотые детали языковой головоломки на тёмно-синем фоне"></div><div class="mobile-screen-head"><div><span>Игры</span><strong id="mobileGameHeading">Выберите упражнение</strong></div><button type="button" class="screen-back" id="gameMenuBack" hidden>Все игры</button></div><div class="learn-head"><div><p class="kicker">Vor dem Sprechen</p><h2>Большая игровая тренировка</h2></div><p>Шесть режимов и длинные раунды закрепляют слова, рабочие фразы, выбор реплики и немецкий порядок слов.</p></div><div class="games-intro"><button class="game-card active" data-game="choice"><span class="game-num">01</span><div><h3>Слово → перевод</h3><p>Выберите точное русское значение.</p></div></button><button class="game-card" data-game="reverse"><span class="game-num">02</span><div><h3>Перевод → слово</h3><p>Вспомните немецкий вариант без карточки.</p></div></button><button class="game-card" data-game="phrase"><span class="game-num">03</span><div><h3>Вставь слово</h3><p>Дополните рабочую фразу по смыслу.</p></div></button><button class="game-card" data-game="order"><span class="game-num">04</span><div><h3>Порядок слов</h3><p>Соберите немецкое предложение из частей.</p></div></button><button class="game-card" data-game="situation"><span class="game-num">05</span><div><h3>Выбери реплику</h3><p>Найдите лучший ответ в рабочей ситуации.</p></div></button><button class="game-card" data-game="pairs"><span class="game-num">06</span><div><h3>Быстрые пары</h3><p>Соедините слова и значения на скорость.</p></div></button></div><div class="game-stage" id="gameStage" aria-live="polite"><div class="game-top"><b id="gameTitle">Слово → перевод</b><span class="game-score" id="gameScore">Задание 1 / 12 · 0 баллов</span></div><div class="game-progress" aria-hidden="true"><i id="gameProgress"></i></div><div id="gameBody"></div><button class="deck-action primary-deck game-next" id="gameNext" type="button">Дальше</button></div></section>
 
 <!-- ================== ПРЕМИАЛЬНЫЙ ЛИЧНЫЙ КАБИНЕТ ================== -->
-<section class="dash" id="profile" style="display:none;margin-top:12px;padding:24px 28px;background:rgba(10,22,38,0.7);border-radius:28px;border:1px solid rgba(45,212,191,0.18);backdrop-filter:blur(20px);box-shadow:0 30px 80px rgba(0,0,0,0.5);">
+<section class="dash" id="profile">
+
+  <!-- Кнопка Назад на Главную -->
+  <div style="margin-bottom:16px;">
+    <button onclick="goBackHome()" class="app-back-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+      ← На главную
+    </button>
+  </div>
+ style="display:none;margin-top:12px;padding:24px 28px;background:rgba(10,22,38,0.7);border-radius:28px;border:1px solid rgba(45,212,191,0.18);backdrop-filter:blur(20px);box-shadow:0 30px 80px rgba(0,0,0,0.5);">
   <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:20px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:24px;">
     <div style="display:flex;align-items:center;gap:18px;">
       <div id="cabinetAvatarContainer" style="position:relative;">
@@ -621,7 +727,14 @@ function closeReason(ev){var reason=(ev&&ev.reason||'').trim();if(reason)return 
 function safeDetail(value){var text=String(value||'неизвестная ошибка');[pendingCredential,sessionCredential].forEach(function(secret){if(secret)text=text.split(secret).join('•••')});return text.replace(/\s+/g,' ').trim().slice(0,320)}
 function failConnection(message){clearSetupTimer();connectAttemptId++;connected=false;pendingCredential='';liveAttemptBusy=false;setStatus('Не подключено','');presence('connecting');document.body.classList.remove('mic-live','session-active');$('topEnd').hidden=true;showError(message);if(socket){try{socket.close()}catch(e){}socket=null}cleanup()}
 /* Официальный @google/genai SDK открывает тот же BidiGenerateContent WebSocket, что и рабочие браузерные референсы. models.list здесь только самопроверка: Live не зависит от REST-списка. */
-var preferredLiveModels=['models/gemini-live-2.5-flash-native-audio','models/gemini-live-2.5-flash-preview-native-audio-09-2025','models/gemini-2.5-flash-native-audio-preview-09-2025'];
+var preferredLiveModels=[
+  'models/gemini-3.8-live',
+  'models/gemini-3.8-live-extended-thinking',
+  'models/gemini-2.5-flash-native-audio',
+  'models/gemini-2.0-flash-realtime-exp',
+  'models/gemini-2.0-flash-exp',
+  'models/gemini-live-2.5-flash-native-audio'
+];
 function liveModelLabel(name){return String(name||'').replace(/^models\//,'')}
 function liveModelScore(name){var n=liveModelLabel(name);for(var i=0;i<preferredLiveModels.length;i++)if(liveModelLabel(preferredLiveModels[i])===n)return i;return 20+(n.indexOf('native-audio')>-1?0:1)}
 function sdk(){return window.GoogleGenAISDK&&window.GoogleGenAISDK.GoogleGenAI?window.GoogleGenAISDK:null}
@@ -685,7 +798,7 @@ async function mic(){if(!navigator.mediaDevices||!navigator.mediaDevices.getUser
 function profile(p,job){var items=['Bewerbung: '+job.name];if(p.company)items.push('Firma / Ort: '+p.company);if(p.experience)items.push('Erfahrung: '+p.experience);if(p.tasks)items.push('Aufgaben: '+p.tasks);if(p.strengths)items.push('Stärken: '+p.strengths);if(p.startDate)items.push('Start: '+p.startDate);if(p.availability)items.push('Schichten: '+p.availability);$('profileList').innerHTML='';items.forEach(function(t){var li=document.createElement('li');li.textContent=t;$('profileList').appendChild(li)})}
 form.onsubmit=async function(e){
 e.preventDefault();error.classList.remove('show');$('connectionCheck').className='connection-check';$('connectionCheck').textContent='';networkDiscoveryWarning='';var typedKey=api.value.trim(),key=typedKey||(credentialType==='key'?sessionCredential:'')||'AIzaSyDemoProjectKeyPlaceholder';
-if(!key){showError(credentialType==='token'?'Нужен одноразовый токен Gemini Live.':'Нужен API‑ключ из Google AI Studio. Он останется только в памяти открытой вкладки.');api.focus();return}
+if(!key){openApiKeyModal();api.focus();return}
 /* Web Audio создаётся и запускается прямо внутри пользовательского нажатия — до любого сетевого await. Иначе iOS/встроенный webview принимает микрофон, но оставляет голос Gemini беззвучным. */
 /* Видео тоже запускается внутри того же пользовательского тапа. Это важно для Android WebView: более поздний play() после сетевого await может быть заблокирован. */
 setTutorState('listening',{force:true});
@@ -815,6 +928,54 @@ async function signOutUser() {
 
 
 // --- Управление Личным Кабинетом ---
+
+function openApiKeyModal() {
+  const modal = document.getElementById('apiKeyModal');
+  if (modal) {
+    modal.style.display = 'grid';
+    const input = document.getElementById('modalApiKeyInput');
+    const saved = localStorage.getItem('dt_gemini_key_' + (window.currentUser?.id || 'guest')) || '';
+    if (input) {
+      input.value = saved;
+      setTimeout(() => input.focus(), 100);
+    }
+  }
+}
+
+function closeApiKeyModal() {
+  const modal = document.getElementById('apiKeyModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function saveModalApiKeyAndStart() {
+  const input = document.getElementById('modalApiKeyInput');
+  const val = (input?.value || '').trim();
+  if (!val) {
+    alert('Пожалуйста, вставьте скопированный ключ (AIzaSy...)');
+    return;
+  }
+  const uid = window.currentUser?.id || 'guest';
+  localStorage.setItem('dt_gemini_key_' + uid, val);
+  
+  // Обновляем в поле apiKey
+  const apiInput = document.getElementById('apiKey');
+  if (apiInput) apiInput.value = val;
+  
+  closeApiKeyModal();
+  alert('Ключ успешно сохранен! Начинаем занятие...');
+  
+  // Запускаем занятие
+  const startBtn = document.getElementById('start');
+  if (startBtn) startBtn.click();
+}
+
+function goBackHome() {
+  document.body.setAttribute('data-view', 'home');
+  document.querySelectorAll('.navbtn').forEach(b => b.classList.remove('active'));
+  const homeBtn = document.querySelector('.navbtn[data-nav="home"]');
+  if (homeBtn) homeBtn.classList.add('active');
+}
+
 function openProfileTab() {
   document.body.setAttribute('data-view', 'profile');
   document.querySelectorAll('.navbtn').forEach(b => b.classList.remove('active'));
@@ -1036,5 +1197,56 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 });
 </script>
+
+<!-- Модальное окно с подробной инструкцией и вводом API ключа -->
+<div id="apiKeyModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(7,17,30,0.85);backdrop-filter:blur(16px);place-items:center;padding:20px;">
+  <div style="background:rgba(15,29,52,0.95);border:1px solid rgba(45,212,191,0.35);border-radius:28px;max-width:520px;width:100%;padding:28px 24px;box-shadow:0 24px 60px rgba(0,0,0,0.7);display:flex;flex-direction:column;gap:18px;position:relative;animation:popModal 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+    
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:44px;height:44px;border-radius:14px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);display:grid;place-items:center;font-size:22px;">🔑</div>
+        <div>
+          <h3 style="font-size:18px;font-weight:700;color:#fff;margin:0;">Подключите личный ключ Google</h3>
+          <span style="font-size:12px;color:#2dd4bf;">Бесплатно · 1 минута · Без банковских карт</span>
+        </div>
+      </div>
+      <button onclick="closeApiKeyModal()" style="background:transparent;border:none;color:#94a3b8;font-size:20px;cursor:pointer;padding:4px 8px;">✕</button>
+    </div>
+
+    <p style="font-size:13px;color:#cbd5e1;line-height:1.55;margin:0;">
+      Общий сервер Gemini Live перегружен или исчерпал лимит запросов. Чтобы общаться с репетитором <b>Herr Weber</b> без пауз и ограничений, вставьте ваш персональный бесплатный ключ из Google:
+    </p>
+
+    <!-- Пошаговая иллюстрированная инструкция -->
+    <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;font-size:12px;color:#e2e8f0;line-height:1.5;">
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span style="width:20px;height:20px;border-radius:50%;background:#2dd4bf;color:#07111e;display:grid;place-items:center;font-weight:700;font-size:11px;flex-shrink:0;">1</span>
+        <span>Откройте официальный <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#38bdf8;font-weight:600;text-decoration:underline;">Google AI Studio ↗</a></span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span style="width:20px;height:20px;border-radius:50%;background:#2dd4bf;color:#07111e;display:grid;place-items:center;font-weight:700;font-size:11px;flex-shrink:0;">2</span>
+        <span>Нажмите синюю кнопку <b>«Create API key»</b> (Создать ключ)</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span style="width:20px;height:20px;border-radius:50%;background:#2dd4bf;color:#07111e;display:grid;place-items:center;font-weight:700;font-size:11px;flex-shrink:0;">3</span>
+        <span>Скопируйте ключ (начинается на <code style="color:#f59e0b;background:rgba(0,0,0,0.4);padding:2px 4px;border-radius:4px;">AIzaSy...</code>) и вставьте ниже:</span>
+      </div>
+    </div>
+
+    <!-- Поле ввода с сохранением -->
+    <div style="display:flex;gap:10px;flex-direction:column;">
+      <input id="modalApiKeyInput" type="password" placeholder="Вставьте ключ: AIzaSy..." style="background:rgba(0,0,0,0.4);border:1px solid rgba(45,212,191,0.4);color:#fff;padding:12px 16px;border-radius:14px;font-family:monospace;font-size:14px;outline:none;width:100%;box-sizing:border-box;">
+      <div style="display:flex;gap:10px;">
+        <button onclick="saveModalApiKeyAndStart()" style="flex:1;background:linear-gradient(135deg,#2dd4bf,#0d9488);color:#07111e;font-size:14px;font-weight:700;padding:12px;border:none;border-radius:14px;cursor:pointer;box-shadow:0 8px 20px rgba(45,212,191,0.3);">
+          ✓ Сохранить и продолжить
+        </button>
+        <button onclick="closeApiKeyModal()" style="background:rgba(255,255,255,0.08);color:#fff;font-size:13px;padding:12px 18px;border:none;border-radius:14px;cursor:pointer;">
+          Отмена
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
