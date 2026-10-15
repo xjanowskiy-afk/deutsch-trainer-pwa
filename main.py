@@ -89,10 +89,15 @@ async def save_user_progress(payload: ProgressPayload):
 
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_API_KEY_BACKUP = os.environ.get("GEMINI_API_KEY_BACKUP", "")
 
 @app.get("/api/config/gemini")
 async def get_gemini_config():
-    return {"status": "ok", "key": GEMINI_API_KEY}
+    return {
+        "status": "ok",
+        "key": GEMINI_API_KEY,
+        "backup_key": GEMINI_API_KEY_BACKUP
+    }
 
 @app.get("/health")
 @app.get("/api/keep-alive")

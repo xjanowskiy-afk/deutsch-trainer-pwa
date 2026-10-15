@@ -1305,6 +1305,8 @@ async function syncSessionsToCloud(userId, currentSessions) {
 // Запуск при открытии страницы
 
 let serverGeminiKey = '';
+let serverBackupGeminiKey = '';
+
 async function fetchServerGeminiKey() {
   try {
     const res = await fetch('/api/config/gemini');
@@ -1312,7 +1314,8 @@ async function fetchServerGeminiKey() {
       const data = await res.json();
       if (data && data.key) {
         serverGeminiKey = data.key;
-        console.log('Gemini Live server engine ready!');
+        if (data.backup_key) serverBackupGeminiKey = data.backup_key;
+        console.log('Gemini Live primary & backup engines ready!');
       }
     }
   } catch(e) {}
