@@ -750,14 +750,33 @@ function handleAuthGateUI(user) {
 
 async function checkAuthSession() {
   if (!supabaseClient) return;
+  
+  // Слушаем реактивное изменение состояния авторизации (включая возврат с #access_token)
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    console.log('Supabase Auth Event:', event, session);
+    if (session && session.user) {
+      window.currentUser = session.user;
+      handleAuthGateUI(session.user);
+      // Очищаем хэш из адресной строки для красивого URL
+      if (window.location.hash && window.location.hash.includes('access_token')) {
+        history.replaceState(null, '', window.location.pathname);
+      }
+    } else if (event === 'SIGNED_OUT') {
+      window.currentUser = null;
+      handleAuthGateUI(null);
+    }
+  });
+
   try {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session && session.user) {
       window.currentUser = session.user;
       handleAuthGateUI(session.user);
     } else {
-      window.currentUser = null;
-      handleAuthGateUI(null);
+      // Если есть токен в URL, даем Supabase секунду распарсить хэш
+      if (!window.location.hash || !window.location.hash.includes('access_token')) {
+        handleAuthGateUI(null);
+      }
     }
   } catch (e) {
     console.error('Session check error:', e);
