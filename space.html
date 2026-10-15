@@ -590,14 +590,14 @@ initDiagnostics();
 </script>
 <!-- splash controlled by Supabase Auth Gate -->
 <script>
-// --- PWA Service Worker Registration ---
+// --- PWA Service Worker ---
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration note:', err));
+    navigator.serviceWorker.register('/sw.js').catch(e => {});
   });
 }
 
-// --- Supabase Cloud & Google Auth Integration ---
+// --- Supabase Client & Auth Gate ---
 const SUPABASE_URL = 'https://tnjhbtrfugrdggqwsygn.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_8XggGtraxl1EyLX9zwFyZQ_-vcD3SAQ';
 let supabaseClient = null;
@@ -608,190 +608,56 @@ if (window.supabase) {
 
 window.currentUser = null;
 
-async function checkAuthSession() {
-  if (!supabaseClient) return;
-  try {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (session && session.user) {
-      window.currentUser = session.user;
-      updateAuthUI(session.user);
-      loadCloudProgress(session.user.id);
-    } else {
-      updateAuthUI(null);
-    }
-  } catch (e) {
-    console.error('Session check error:', e);
-  }
-}
-
-async function signInWithGoogle() {
-  if (!supabaseClient) {
-    alert('База данных подключается, подождите...');
-    return;
-  }
-  const { data, error } = await supabaseClient.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: window.location.origin
-    }
-  });
-  if (error) {
-    console.error('Google Sign In Error:', error);
-    alert('Ошибка входа: ' + error.message);
-  }
-}
-
-async function signOutUser() {
-  if (!supabaseClient) return;
-  await supabaseClient.auth.signOut();
-  window.currentUser = null;
-  updateAuthUI(null);
-  window.location.reload();
-}
-
-function updateAuthUI(user) {
-  const authContainer = document.getElementById('userAuthProfileSlot');
-  if (!authContainer) return;
+function unlockApp(user) {
+  console.log('Unlocking app for:', user?.email);
+  window.currentUser = user;
   
-  if (user) {
-    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Ученик';
-    const avatar = user.user_metadata?.avatar_url || '';
-    authContainer.innerHTML = [
-      '<div style="display:flex;align-items:center;gap:10px;background:rgba(15,29,52,0.85);padding:6px 14px;border-radius:24px;border:1px solid rgba(45,212,191,0.3);backdrop-filter:blur(8px);">',
-      avatar ? '<img src="' + avatar + '" style="width:28px;height:28px;border-radius:50%;border:1px solid #2dd4bf;object-fit:cover;">' : '<div style="width:28px;height:28px;border-radius:50%;background:#0d9488;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">' + name[0].toUpperCase() + '</div>',
-      '<div style="display:flex;flex-direction:column;">',
-      '<span style="font-size:12px;font-weight:600;color:#f1f5f9;line-height:1.2;">' + name + '</span>',
-      '<span style="font-size:10px;color:#2dd4bf;">Синхронизировано</span>',
-      '</div>',
-      '<button onclick="signOutUser()" title="Выйти" style="background:transparent;border:none;color:#94a3b8;cursor:pointer;padding:2px 4px;font-size:14px;margin-left:4px;">✕</button>',
-      '</div>'
-    ].join('');
-  } else {
-    authContainer.innerHTML = [
-      '<button onclick="signInWithGoogle()" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:8px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;backdrop-filter:blur(10px);transition:all 0.2s;">',
-      '<svg width="16" height="16" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16c1.8 3.7 5.6 7 10.1 7z"/></svg>',
-      'Войти через Google',
-      '</button>'
-    ].join('');
-  }
-}
-
-async function loadCloudProgress(userId) {
-  try {
-    const { data } = await supabaseClient.from('user_progress').select('*').eq('user_id', userId).single();
-    if (data && data.progress_data) {
-      console.log('Cloud progress loaded for', userId);
-    }
-  } catch(e) {
-    console.log('Progress note:', e);
-  }
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-  const nav = document.querySelector('.program-nav');
-  if (nav && !document.getElementById('userAuthProfileSlot')) {
-    const slot = document.createElement('div');
-    slot.id = 'userAuthProfileSlot';
-    slot.style.display = 'flex';
-    slot.style.alignItems = 'center';
-    slot.style.marginLeft = 'auto';
-    slot.style.padding = '4px 8px';
-    nav.appendChild(slot);
-  }
-  checkAuthSession();
-});
-</script>
-
-
-<script>
-// --- PWA Service Worker Registration ---
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration note:', err));
-  });
-}
-
-// --- Supabase Cloud & Google Auth Gate ---
-const SUPABASE_URL = 'https://tnjhbtrfugrdggqwsygn.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_8XggGtraxl1EyLX9zwFyZQ_-vcD3SAQ';
-let supabaseClient = null;
-
-if (window.supabase) {
-  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-}
-
-window.currentUser = null;
-let isAuthorized = false;
-
-// Управление отображением сплэш-экрана как Auth Gate
-function handleAuthGateUI(user) {
+  // Прячем экран авторизации
   const splash = document.getElementById('premiumSplash');
-  const authActions = document.getElementById('splashAuthActions');
+  if (splash) {
+    splash.classList.add('is-hidden');
+    splash.style.opacity = '0';
+    splash.style.pointerEvents = 'none';
+    setTimeout(() => { splash.style.display = 'none'; }, 600);
+  }
   
-  if (user) {
-    isAuthorized = true;
-    if (authActions) authActions.style.display = 'none';
-    if (splash) {
-      splash.classList.add('is-hidden');
-      setTimeout(() => { if (splash) splash.style.display = 'none'; }, 850);
-    }
-    updateNavbarProfile(user);
+  updateNavbarProfile(user);
+  if (user && user.id) {
     initUserCloudSync(user.id);
-  } else {
-    isAuthorized = false;
-    if (splash) {
-      splash.style.display = 'flex';
-      splash.classList.remove('is-hidden');
-    }
-    if (authActions) authActions.style.display = 'flex';
-    updateNavbarProfile(null);
+  }
+  
+  // Очищаем хэш с токеном из URL для красоты
+  if (window.location.hash && window.location.hash.includes('access_token')) {
+    history.replaceState(null, '', window.location.pathname);
   }
 }
 
-async function checkAuthSession() {
-  if (!supabaseClient) return;
-  
-  // Слушаем реактивное изменение состояния авторизации (включая возврат с #access_token)
-  supabaseClient.auth.onAuthStateChange((event, session) => {
-    console.log('Supabase Auth Event:', event, session);
-    if (session && session.user) {
-      window.currentUser = session.user;
-      handleAuthGateUI(session.user);
-      // Очищаем хэш из адресной строки для красивого URL
-      if (window.location.hash && window.location.hash.includes('access_token')) {
-        history.replaceState(null, '', window.location.pathname);
-      }
-    } else if (event === 'SIGNED_OUT') {
-      window.currentUser = null;
-      handleAuthGateUI(null);
-    }
-  });
-
-  try {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (session && session.user) {
-      window.currentUser = session.user;
-      handleAuthGateUI(session.user);
-    } else {
-      // Если есть токен в URL, даем Supabase секунду распарсить хэш
-      if (!window.location.hash || !window.location.hash.includes('access_token')) {
-        handleAuthGateUI(null);
-      }
-    }
-  } catch (e) {
-    console.error('Session check error:', e);
-    handleAuthGateUI(null);
+function lockApp() {
+  console.log('Locking app: user not authorized');
+  window.currentUser = null;
+  const splash = document.getElementById('premiumSplash');
+  if (splash) {
+    splash.style.display = 'grid';
+    splash.classList.remove('is-hidden');
+    splash.style.opacity = '1';
+    splash.style.pointerEvents = 'auto';
   }
+  const btn = document.getElementById('splashGoogleBtn');
+  if (btn) {
+    btn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16c1.8 3.7 5.6 7 10.1 7z"/></svg> Войти через Google`;
+    btn.style.opacity = '1';
+  }
+  updateNavbarProfile(null);
 }
 
 async function signInWithGoogle() {
   if (!supabaseClient) {
-    alert('База данных подключается, подождите...');
+    alert('База данных загружается...');
     return;
   }
   const btn = document.getElementById('splashGoogleBtn');
   if (btn) {
-    btn.innerHTML = 'Загрузка Google...';
+    btn.innerHTML = 'Подключение к Google...';
     btn.style.opacity = '0.7';
   }
   const { data, error } = await supabaseClient.auth.signInWithOAuth({
@@ -801,19 +667,16 @@ async function signInWithGoogle() {
     }
   });
   if (error) {
-    console.error('Google Sign In Error:', error);
     alert('Ошибка авторизации: ' + error.message);
-    if (btn) {
-      btn.innerHTML = 'Войти через Google';
-      btn.style.opacity = '1';
-    }
+    lockApp();
   }
 }
 
 async function signOutUser() {
-  if (!supabaseClient) return;
-  await supabaseClient.auth.signOut();
-  window.currentUser = null;
+  if (supabaseClient) {
+    await supabaseClient.auth.signOut();
+  }
+  localStorage.clear();
   window.location.reload();
 }
 
@@ -824,26 +687,21 @@ function updateNavbarProfile(user) {
   if (user) {
     const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Ученик';
     const avatar = user.user_metadata?.avatar_url || '';
-    authContainer.innerHTML = [
-      '<div style="display:flex;align-items:center;gap:8px;background:rgba(15,29,52,0.85);padding:5px 12px;border-radius:24px;border:1px solid rgba(45,212,191,0.3);backdrop-filter:blur(8px);">',
-      avatar ? '<img src="' + avatar + '" style="width:26px;height:26px;border-radius:50%;border:1px solid #2dd4bf;object-fit:cover;">' : '<div style="width:26px;height:26px;border-radius:50%;background:#0d9488;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">' + name[0].toUpperCase() + '</div>',
-      '<div style="display:flex;flex-direction:column;">',
-      '<span style="font-size:12px;font-weight:600;color:#f1f5f9;line-height:1.1;">' + name + '</span>',
-      '<span style="font-size:9px;color:#2dd4bf;">Облачный профиль</span>',
-      '</div>',
-      '<button onclick="signOutUser()" title="Выйти из аккаунта" style="background:transparent;border:none;color:#94a3b8;cursor:pointer;padding:2px 4px;font-size:13px;margin-left:4px;">✕</button>',
-      '</div>'
-    ].join('');
+    authContainer.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;background:rgba(15,29,52,0.85);padding:5px 12px;border-radius:24px;border:1px solid rgba(45,212,191,0.3);backdrop-filter:blur(8px);">
+        ${avatar ? `<img src="${avatar}" style="width:26px;height:26px;border-radius:50%;border:1px solid #2dd4bf;object-fit:cover;">` : `<div style="width:26px;height:26px;border-radius:50%;background:#0d9488;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">${name[0].toUpperCase()}</div>`}
+        <div style="display:flex;flex-direction:column;">
+          <span style="font-size:12px;font-weight:600;color:#f1f5f9;line-height:1.1;">${name}</span>
+          <span style="font-size:9px;color:#2dd4bf;">Личный кабинет</span>
+        </div>
+        <button onclick="signOutUser()" title="Выйти" style="background:transparent;border:none;color:#94a3b8;cursor:pointer;padding:2px 4px;font-size:13px;margin-left:4px;">✕</button>
+      </div>
+    `;
   } else {
-    authContainer.innerHTML = [
-      '<button onclick="signInWithGoogle()" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);padding:6px 12px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;backdrop-filter:blur(10px);">',
-      'Войти',
-      '</button>'
-    ].join('');
+    authContainer.innerHTML = '';
   }
 }
 
-// Автоматическая облачная синхронизация профиля и статистики занятий
 async function initUserCloudSync(userId) {
   const localKey = 'dt_user_sessions_' + userId;
   const cached = localStorage.getItem(localKey);
@@ -857,7 +715,6 @@ async function initUserCloudSync(userId) {
     } catch(e) {}
   }
 
-  // Загружаем из облачного бэкенда
   try {
     const res = await fetch('/api/user/' + userId + '/progress');
     if (res.ok) {
@@ -868,11 +725,8 @@ async function initUserCloudSync(userId) {
         if (typeof renderProgress === 'function') renderProgress();
       }
     }
-  } catch(e) {
-    console.log('Server progress fetch note:', e);
-  }
+  } catch(e) {}
 
-  // Перехват добавления новых сессий для мгновенной отправки в облако
   if (!window._sessionsHooked && Array.isArray(window.sessions)) {
     window._sessionsHooked = true;
     const originalPush = window.sessions.push;
@@ -887,7 +741,6 @@ async function initUserCloudSync(userId) {
 async function syncSessionsToCloud(userId, currentSessions) {
   const localKey = 'dt_user_sessions_' + userId;
   localStorage.setItem(localKey, JSON.stringify(currentSessions));
-  
   try {
     const email = window.currentUser?.email || '';
     await fetch('/api/user/progress', {
@@ -900,12 +753,11 @@ async function syncSessionsToCloud(userId, currentSessions) {
         stats: { updated_at: new Date().toISOString(), total: currentSessions.length }
       })
     });
-  } catch(e) {
-    console.error('Failed to sync progress to cloud API:', e);
-  }
+  } catch(e) {}
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+// Запуск при открытии страницы
+window.addEventListener('DOMContentLoaded', async () => {
   const nav = document.querySelector('.program-nav');
   if (nav && !document.getElementById('userAuthProfileSlot')) {
     const slot = document.createElement('div');
@@ -916,9 +768,39 @@ window.addEventListener('DOMContentLoaded', () => {
     slot.style.padding = '4px 8px';
     nav.appendChild(slot);
   }
-  checkAuthSession();
+
+  if (!supabaseClient) {
+    console.error('Supabase client failed to load');
+    return;
+  }
+
+  // Реактивный слушатель событий
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    console.log('Auth state changed:', event);
+    if (session && session.user) {
+      unlockApp(session.user);
+    } else if (event === 'SIGNED_OUT') {
+      lockApp();
+    }
+  });
+
+  // Первичная проверка текущей сессии
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session && session.user) {
+      unlockApp(session.user);
+    } else {
+      // Проверяем, может в URL прямо сейчас летит access_token
+      if (window.location.hash && window.location.hash.includes('access_token')) {
+        console.log('Detecting access_token in hash, awaiting Supabase parser...');
+      } else {
+        lockApp();
+      }
+    }
+  } catch(e) {
+    lockApp();
+  }
 });
 </script>
-
 </body>
 </html>
