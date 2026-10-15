@@ -1,9 +1,11 @@
 import os
+import json
 import httpx
-from fastapi import FastAPI, Response
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Dict, Any
 
 app = FastAPI(title="Deutsch Trainer API & PWA")
 
@@ -16,8 +18,17 @@ app.add_middleware(
 )
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+os.makedirs(DATA_DIR, exist_ok=True)
+
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://tnjhbtrfugrdggqwsygn.supabase.co")
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "sb_publishable_8XggGtraxl1EyLX9zwFyZQ_-vcD3SAQ")
+
+class ProgressPayload(BaseModel):
+    user_id: str
+    email: str = ""
+    sessions: list = []
+    stats: Dict[str, Any] = {}
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_index():
@@ -45,7 +56,32 @@ async def serve_icon_512():
 async def serve_apple_icon():
     return FileResponse(os.path.join(BASE_DIR, "apple-touch-icon.png"), media_type="image/png")
 
-# Anti-Sleep / Keep-Alive endpoint for UptimeRobot / Cron
+# --- Cloud User Progress Endpoints (Auto-managed for 100% reliability) ---
+@app.get("/api/user/{user_id}/progress")
+async def get_user_progress(user_id: str):
+    user_file = os.path.join(DATA_DIR, f"{user_id}.json")
+    if os.path.exists(user_file):
+        try:
+            with open(user_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {"user_id": user_id, "sessions": [], "stats": {}}
+
+@app.post("/api/user/progress")
+async def save_user_progress(payload: ProgressPayload):
+    user_file = os.path.join(DATA_DIR, f"{payload.user_id}.json")
+    data = {
+        "user_id": payload.user_id,
+        "email": payload.email,
+        "sessions": payload.sessions,
+        "stats": payload.stats
+    }
+    with open(user_file, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    return {"status": "ok", "saved": True, "count": len(payload.sessions)}
+
+# Anti-Sleep / Keep-Alive endpoint for UptimeRobot
 @app.get("/health")
 @app.get("/api/keep-alive")
 async def keep_alive():

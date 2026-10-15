@@ -824,9 +824,8 @@ function updateNavbarProfile(user) {
   }
 }
 
-// Синхронизация статистики пользователя с Supabase
+// Автоматическая облачная синхронизация профиля и статистики занятий
 async function initUserCloudSync(userId) {
-  // 1. Проверяем локальное хранилище для бесшовной работы
   const localKey = 'dt_user_sessions_' + userId;
   const cached = localStorage.getItem(localKey);
   if (cached && window.sessions && window.sessions.length === 0) {
@@ -839,33 +838,29 @@ async function initUserCloudSync(userId) {
     } catch(e) {}
   }
 
-  // 2. Загружаем из облака Supabase
+  // Загружаем из облачного бэкенда
   try {
-    const { data, error } = await supabaseClient
-      .from('user_progress')
-      .select('progress_data')
-      .eq('user_id', userId)
-      .single();
-
-    if (data && data.progress_data && Array.isArray(data.progress_data.sessions)) {
-      if (data.progress_data.sessions.length > (window.sessions ? window.sessions.length : 0)) {
-        window.sessions = data.progress_data.sessions;
+    const res = await fetch('/api/user/' + userId + '/progress');
+    if (res.ok) {
+      const cloudData = await res.json();
+      if (cloudData && Array.isArray(cloudData.sessions) && cloudData.sessions.length > 0) {
+        window.sessions = cloudData.sessions;
         localStorage.setItem(localKey, JSON.stringify(window.sessions));
         if (typeof renderProgress === 'function') renderProgress();
       }
     }
   } catch(e) {
-    console.log('Cloud sync info:', e);
+    console.log('Server progress fetch note:', e);
   }
 
-  // 3. Перехват добавления новых сессий в массив sessions для автосохранения в облако
+  // Перехват добавления новых сессий для мгновенной отправки в облако
   if (!window._sessionsHooked && Array.isArray(window.sessions)) {
     window._sessionsHooked = true;
     const originalPush = window.sessions.push;
     window.sessions.push = function() {
-      const res = originalPush.apply(this, arguments);
+      const result = originalPush.apply(this, arguments);
       syncSessionsToCloud(userId, this);
-      return res;
+      return result;
     };
   }
 }
@@ -874,15 +869,20 @@ async function syncSessionsToCloud(userId, currentSessions) {
   const localKey = 'dt_user_sessions_' + userId;
   localStorage.setItem(localKey, JSON.stringify(currentSessions));
   
-  if (!supabaseClient) return;
   try {
-    await supabaseClient.from('user_progress').upsert({
-      user_id: userId,
-      progress_data: { sessions: currentSessions, updated_at: new Date().toISOString() },
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'user_id' });
+    const email = window.currentUser?.email || '';
+    await fetch('/api/user/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: userId,
+        email: email,
+        sessions: currentSessions,
+        stats: { updated_at: new Date().toISOString(), total: currentSessions.length }
+      })
+    });
   } catch(e) {
-    console.error('Failed to sync sessions to cloud:', e);
+    console.error('Failed to sync progress to cloud API:', e);
   }
 }
 
