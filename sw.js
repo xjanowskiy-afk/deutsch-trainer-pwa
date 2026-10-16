@@ -1,5 +1,5 @@
-// Service Worker for Deutsch Trainer PWA (v14 High Performance)
-const CACHE_NAME = 'deutsch-trainer-v14';
+// Service Worker for Deutsch Trainer PWA (v15 High Performance)
+const CACHE_NAME = 'deutsch-trainer-v15';
 
 // Critical core assets to precache immediately
 const CORE_ASSETS = [
