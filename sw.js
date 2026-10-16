@@ -1,5 +1,5 @@
 // Service Worker for Deutsch Trainer PWA
-const CACHE_NAME = 'deutsch-trainer-v8';
+const CACHE_NAME = 'deutsch-trainer-v9';
 const ASSETS_TO_CACHE = [
   '/',
   '/manifest.json',
