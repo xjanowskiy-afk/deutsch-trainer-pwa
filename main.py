@@ -127,7 +127,7 @@ async def keep_alive():
     }
 
 @app.get("/api/tts")
-async def tts_endpoint(text: str, voice: str = "de-DE-FlorianMultilingualNeural", speed: str = "-2%"):
+async def tts_endpoint(text: str, voice: str = "de-DE-FlorianMultilingualNeural", speed: str = "-14%"):
     clean = (text or "").strip()
     if not clean:
         raise HTTPException(status_code=400, detail="Text cannot be empty")

@@ -30,3 +30,5 @@ embed_auth_into_appbar.py
 apply_ios_neural_audio.py
 fix_*.py
 inspect_*.py
+assets/icons/
+update_speed_settings.py

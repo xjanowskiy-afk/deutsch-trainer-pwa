@@ -2480,7 +2480,8 @@ function speakGerman(text, triggeringEl) {
   // Microsoft Neural v2 (по умолчанию новейший de-DE-FlorianMultilingualNeural)
   var base = (window.location.pathname.indexOf('/deutsch') === 0) ? '/deutsch/api/tts' : '/api/tts';
   var v = window.selectedTtsVoice || localStorage.getItem('dt_tts_voice') || 'de-DE-FlorianMultilingualNeural';
-  var url = base + '?text=' + encodeURIComponent(clean) + '&voice=' + encodeURIComponent(v);
+  var spd = window.selectedTtsSpeed || localStorage.getItem('dt_tts_speed') || '-14%';
+  var url = base + '?text=' + encodeURIComponent(clean) + '&voice=' + encodeURIComponent(v) + '&speed=' + encodeURIComponent(spd);
 
   // 1. МГНОВЕННЫЙ КЭШ В RAM (0 мс задержки!)
   if (ttsAudioCtx && ttsBufferCache.has(url)) {
@@ -2568,6 +2569,13 @@ function changeTtsVoice(voice) {
   ttsBufferCache.clear();
 }
 window.changeTtsVoice = changeTtsVoice;
+
+function changeTtsSpeed(speed) {
+  window.selectedTtsSpeed = speed;
+  localStorage.setItem('dt_tts_speed', speed);
+  ttsBufferCache.clear();
+}
+window.changeTtsSpeed = changeTtsSpeed;
 
 function changeGeminiVoice(voice) {
   window.selectedGeminiVoice = voice;
@@ -3160,7 +3168,16 @@ function updateAuthGate(user) {
         </label>
       </div>
 
-      <div style="margin-top:12px;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;">
+      <div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:11px;color:#94a3b8;">Темп произношения:</span>
+        <select id="ttsSpeedSelect" onchange="changeTtsSpeed(this.value)" style="background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.15);color:#f8fafc;font-size:12px;padding:4px 8px;border-radius:8px;outline:none;">
+          <option value="-14%" selected>Медленный, чёткий (A1–B1 учебный)</option>
+          <option value="-8%">Умеренный (комфортный)</option>
+          <option value="0%">Обычный (беглая речь)</option>
+        </select>
+      </div>
+
+      <div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;">
         <span style="font-size:11px;color:#94a3b8;">Голос репетитора в диалоге:</span>
         <select id="geminiLiveVoiceSelect" onchange="changeGeminiVoice(this.value)" style="background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.15);color:#f8fafc;font-size:12px;padding:4px 8px;border-radius:8px;outline:none;">
           <option value="Fenrir" selected>Fenrir (Мужской · наставник)</option>
@@ -3741,6 +3758,10 @@ window.addEventListener('load', () => {
   const savedGemini = localStorage.getItem('dt_gemini_voice') || 'Fenrir';
   const sel = document.getElementById('geminiLiveVoiceSelect');
   if (sel) sel.value = savedGemini;
+
+  const savedSpeed = localStorage.getItem('dt_tts_speed') || '-14%';
+  const spdSel = document.getElementById('ttsSpeedSelect');
+  if (spdSel) spdSel.value = savedSpeed;
 
   const saved = localStorage.getItem('dt_user_gemini_key') || '';
   const input = document.getElementById('userCustomGeminiKey');
