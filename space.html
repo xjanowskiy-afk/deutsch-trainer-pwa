@@ -4,8 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<link rel="icon" href="data:,">
-<title>Тренажер</title>
+<link rel="icon" type="image/png" sizes="64x64" href="/favicon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<title>Deutsch Trainer · Немецкий для работы A1–B1</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 :root{--bg:#f3f0e8;--paper:#fffefa;--soft:#e9e5dc;--ink:#191b1d;--muted:#62676d;--line:#d2ccc0;--red:#d94a31;--red2:#a93222;--redsoft:#ffe0d7;--green:#17633b;--greensoft:#d9efdf;--blue:#28578f;--bluesoft:#dce9f7;--amber:#8a5a12;--ambersoft:#f7e8c7;--shadow:0 22px 65px rgba(43,38,29,.11)}
@@ -533,16 +536,469 @@ html,body{height:100%;max-height:100%;overflow:hidden!important;overscroll-behav
 
 </style>
 <style>
-
+/* Полноэкранный отзывчивый скролл и премиальное оформление для всех 5 учебных секций */
 body[data-view="roleplay"] #roleplay,
 body[data-view="qa"] #qa,
 body[data-view="work"] #work,
 body[data-view="exam"] #exam,
 body[data-view="teacher"] #teacher {
   display: block !important;
-  margin-top: 12px !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior-y: contain !important;
+  box-sizing: border-box !important;
+  padding: 10px 12px 120px 12px !important;
 }
 
+/* Всегда отображать шапку-баннер с кнопкой «Начать занятие» на мобильных и ПК */
+body[data-view="roleplay"] .section-illustration,
+body[data-view="qa"] .section-illustration,
+body[data-view="work"] .section-illustration,
+body[data-view="exam"] .section-illustration,
+body[data-view="teacher"] .section-illustration {
+  display: block !important;
+  background: linear-gradient(145deg, rgba(16, 28, 44, 0.95), rgba(8, 18, 30, 0.98)) !important;
+  border: 1px solid rgba(218, 183, 112, 0.35) !important;
+  border-radius: 20px !important;
+  padding: 18px !important;
+  margin-bottom: 16px !important;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45) !important;
+}
+
+body[data-view="roleplay"] .section-illustration-copy,
+body[data-view="qa"] .section-illustration-copy,
+body[data-view="work"] .section-illustration-copy,
+body[data-view="exam"] .section-illustration-copy,
+body[data-view="teacher"] .section-illustration-copy {
+  display: block !important;
+}
+
+body[data-view="roleplay"] .section-illustration h2,
+body[data-view="qa"] .section-illustration h2,
+body[data-view="work"] .section-illustration h2,
+body[data-view="exam"] .section-illustration h2,
+body[data-view="teacher"] .section-illustration h2 {
+  font-size: 20px !important;
+  color: #f8fafc !important;
+  margin: 4px 0 8px 0 !important;
+  line-height: 1.25 !important;
+}
+
+body[data-view="roleplay"] .section-illustration p,
+body[data-view="qa"] .section-illustration p,
+body[data-view="work"] .section-illustration p,
+body[data-view="exam"] .section-illustration p,
+body[data-view="teacher"] .section-illustration p {
+  font-size: 13px !important;
+  color: #94a3b8 !important;
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+
+.row-speak-btn {
+  background: rgba(245, 158, 11, 0.15) !important;
+  border: 1px solid rgba(245, 158, 11, 0.45) !important;
+  color: #fbbf24 !important;
+  border-radius: 10px !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  flex-shrink: 0 !important;
+}
+.row-speak-btn:hover {
+  background: rgba(245, 158, 11, 0.3) !important;
+  transform: scale(1.08) !important;
+}
+.row-speak-btn:active {
+  transform: scale(0.95) !important;
+}
+
+/* Пульсирующий неоновый индикатор воспроизведения для всех кнопок озвучки (видно даже без звука) */
+.row-speak-btn.is-playing, .word-speaker-btn.is-playing {
+  animation: audioPulseGlow 1.05s ease-in-out infinite !important;
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+  background: rgba(56, 189, 248, 0.28) !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.6) !important;
+}
+@keyframes audioPulseGlow {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px #38bdf8); }
+  50% { transform: scale(1.15); filter: drop-shadow(0 0 10px #38bdf8); }
+}
+
+/* Премиальные стили для 5 интерактивных разделов */
+.luxury-glass-card {
+  background: linear-gradient(145deg, rgba(16, 26, 42, 0.88), rgba(9, 17, 28, 0.94)) !important;
+  border: 1px solid rgba(218, 183, 112, 0.28) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.38) !important;
+  padding: 18px !important;
+  backdrop-filter: blur(16px) !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.luxury-glass-card:hover {
+  border-color: rgba(245, 158, 11, 0.48) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.48) !important;
+}
+
+.scenario-card {
+  background: rgba(0, 0, 0, 0.32) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 14px !important;
+  padding: 14px 16px !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+}
+.scenario-card:hover {
+  background: rgba(245, 158, 11, 0.06) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ========================================================
+   Q&A INTERVIEW MODULE (ВОПРОСЫ И ОТВЕТЫ НА СОБЕСЕДОВАНИИ)
+   ======================================================== */
+.qa-filter-bar {
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  margin-bottom: 20px !important;
+  align-items: center !important;
+}
+
+.qa-filter-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 8px 16px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #94a3b8 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  user-select: none !important;
+}
+.qa-filter-chip:hover {
+  color: #f1f5f9 !important;
+  border-color: rgba(245, 158, 11, 0.45) !important;
+  background: rgba(245, 158, 11, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+.qa-filter-chip.active {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.28), rgba(217, 119, 6, 0.38)) !important;
+  border-color: #f59e0b !important;
+  color: #fbbf24 !important;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.28) !important;
+}
+.qa-filter-chip .chip-count {
+  font-size: 11px !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  padding: 2px 6px !important;
+  border-radius: 8px !important;
+  opacity: 0.85 !important;
+}
+
+.qa-cards-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 18px !important;
+  margin-top: 14px !important;
+}
+
+.qa-card {
+  background: linear-gradient(145deg, rgba(16, 26, 42, 0.92), rgba(9, 17, 28, 0.96)) !important;
+  border: 1px solid rgba(218, 183, 112, 0.24) !important;
+  border-radius: 18px !important;
+  padding: 20px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.38) !important;
+  backdrop-filter: blur(14px) !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.qa-card:hover {
+  border-color: rgba(245, 158, 11, 0.48) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.48) !important;
+}
+
+.qa-card-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  margin-bottom: 12px !important;
+}
+
+.qa-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+}
+.qa-badge-intro {
+  background: rgba(59, 130, 246, 0.16) !important;
+  color: #60a5fa !important;
+  border: 1px solid rgba(59, 130, 246, 0.35) !important;
+}
+.qa-badge-tech {
+  background: rgba(245, 158, 11, 0.16) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
+}
+.qa-badge-motivation {
+  background: rgba(16, 185, 129, 0.16) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+}
+.qa-badge-questions {
+  background: rgba(168, 85, 247, 0.16) !important;
+  color: #c084fc !important;
+  border: 1px solid rgba(168, 85, 247, 0.35) !important;
+}
+.qa-badge-agg {
+  background: rgba(239, 68, 68, 0.16) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.35) !important;
+}
+
+.qa-question-box {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin-bottom: 6px !important;
+}
+.qa-question-de {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #fbbf24 !important;
+  line-height: 1.35 !important;
+  margin: 0 !important;
+}
+.qa-question-ru {
+  font-size: 13px !important;
+  color: #94a3b8 !important;
+  margin: 3px 0 10px 0 !important;
+  line-height: 1.4 !important;
+}
+
+.qa-intention-box {
+  background: rgba(30, 41, 59, 0.45) !important;
+  border-left: 3px solid #38bdf8 !important;
+  border-radius: 0 10px 10px 0 !important;
+  padding: 8px 12px !important;
+  margin-bottom: 14px !important;
+  font-size: 12px !important;
+  color: #cbd5e1 !important;
+  line-height: 1.45 !important;
+}
+.qa-intention-title {
+  color: #38bdf8 !important;
+  font-weight: 700 !important;
+  margin-bottom: 2px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+.qa-answer-box {
+  background: rgba(0, 0, 0, 0.32) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 14px !important;
+  padding: 14px 16px !important;
+  margin-bottom: 12px !important;
+}
+.qa-answer-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 8px !important;
+}
+.qa-answer-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #34d399 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.4px !important;
+}
+.qa-answer-de {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #f8fafc !important;
+  line-height: 1.55 !important;
+  margin: 0 0 6px 0 !important;
+}
+.qa-stress {
+  color: #38bdf8 !important;
+  font-weight: 700 !important;
+  border-bottom: 1px dotted rgba(56, 189, 248, 0.5) !important;
+}
+.qa-phonetics {
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 11px !important;
+  color: #a5b4fc !important;
+  background: rgba(99, 102, 241, 0.12) !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  display: inline-block !important;
+  margin: 4px 0 8px 0 !important;
+  line-height: 1.4 !important;
+}
+.qa-answer-ru {
+  font-size: 13px !important;
+  color: #cbd5e1 !important;
+  line-height: 1.45 !important;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08) !important;
+  padding-top: 8px !important;
+  margin-top: 6px !important;
+}
+
+.qa-warning-box {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border: 1px solid rgba(239, 68, 68, 0.25) !important;
+  border-left: 3px solid #ef4444 !important;
+  border-radius: 0 10px 10px 0 !important;
+  padding: 10px 12px !important;
+  margin-bottom: 12px !important;
+  font-size: 12px !important;
+  color: #fca5a5 !important;
+  line-height: 1.45 !important;
+}
+.qa-warning-title {
+  color: #f87171 !important;
+  font-weight: 700 !important;
+  margin-bottom: 3px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+.qa-pro-box {
+  background: rgba(16, 185, 129, 0.08) !important;
+  border: 1px solid rgba(16, 185, 129, 0.25) !important;
+  border-left: 3px solid #10b981 !important;
+  border-radius: 0 10px 10px 0 !important;
+  padding: 10px 12px !important;
+  margin-bottom: 12px !important;
+  font-size: 12px !important;
+  color: #a7f3d0 !important;
+  line-height: 1.45 !important;
+}
+.qa-pro-title {
+  color: #34d399 !important;
+  font-weight: 700 !important;
+  margin-bottom: 3px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+.qa-card-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  margin-top: 12px !important;
+  padding-top: 8px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+.qa-practice-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(217, 119, 6, 0.24)) !important;
+  border: 1px solid rgba(245, 158, 11, 0.4) !important;
+  color: #fbbf24 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  padding: 8px 14px !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.qa-practice-btn:hover {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  color: #0f172a !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35) !important;
+  transform: translateY(-1px) !important;
+}
+.qa-practice-btn:active {
+  transform: translateY(0) !important;
+}
+
+.gender-badge-der {
+  background: rgba(59, 130, 246, 0.18) !important;
+  color: #60a5fa !important;
+  border: 1px solid rgba(59, 130, 246, 0.35) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 2px 7px !important;
+  border-radius: 6px !important;
+}
+.gender-badge-die {
+  background: rgba(244, 63, 94, 0.18) !important;
+  color: #fb7185 !important;
+  border: 1px solid rgba(244, 63, 94, 0.35) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 2px 7px !important;
+  border-radius: 6px !important;
+}
+.gender-badge-das {
+  background: rgba(16, 185, 129, 0.18) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 2px 7px !important;
+  border-radius: 6px !important;
+}
+
+.action-cta-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  font-size: 13px !important;
+  padding: 10px 18px !important;
+  border-radius: 12px !important;
+  border: none !important;
+  cursor: pointer !important;
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.32) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  text-decoration: none !important;
+}
+.action-cta-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.45) !important;
+  filter: brightness(1.05) !important;
+}
+.action-cta-btn:active {
+  transform: translateY(0) !important;
+}
 </style>
 </head>
 <body data-view="home"><div class="ambient-backdrop" aria-hidden="true"><canvas id="ambientParticles"></canvas></div><div class="premium-splash" id="premiumSplash" role="status" aria-label="Загрузка тренажёра"><div class="splash-inner"><div class="splash-copy"><div class="splash-kicker">Deutsch · Persönliches Training</div><h2>Уверенная речь начинается здесь</h2><p>Персональная практика немецкого для работы, собеседований и профессионального общения.</p><div class="splash-line" aria-hidden="true"></div>
@@ -889,7 +1345,7 @@ body[data-view="teacher"] #teacher {
 </section>
 
 <!-- ========================================== -->
-<!-- 4. ВОПРОС — ОТВЕТ (БЛИЦ-ИНТЕРВЬЮ) -->
+<!-- 4. ВОПРОС — ОТВЕТ: СОБЕСЕДОВАНИЕ В ГЕРМАНИИ (A2–B1) -->
 <!-- ========================================== -->
 <section class="learn-section" id="qa" style="display:none;">
 <div class="screen-back-container" style="margin-bottom:16px;">
@@ -901,114 +1357,631 @@ body[data-view="teacher"] #teacher {
 
 <div class="section-illustration">
   <div class="section-illustration-copy">
-    <p class="kicker">Modus 04 · Frage — Antwort</p>
-    <h2>Блиц: 10 главных вопросов собеседования</h2>
-    <p>Нажмите на вопрос или ответ, чтобы прослушать идеальное немецкое произношение. Отработайте каждую фразу перед живым уроком.</p>
+    <p class="kicker">Modus 04 · Frage — Antwort & Bewerbungstraining</p>
+    <h2>Вопросы и ответы на собеседовании в Германии</h2>
+    <p>13 ключевых вопросов работодателей DACH (A2–B1) с готовыми шаблонами ответов (*Musterantworten*), разбором скрытых намерений рекрутера, фонетикой и стоп-фразами (AGG). Отработайте любой вопрос вживую с Herr Weber!</p>
     <div style="margin-top:16px;">
       <button type="button" onclick="startDirectLesson('qa', 'interview')" style="display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg, #f59e0b, #d97706);color:#0f172a;font-weight:800;font-size:14px;padding:12px 22px;border-radius:14px;border:none;cursor:pointer;box-shadow:0 6px 20px rgba(245,158,11,0.35);transition:all 0.2s;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
-        <span>⚡ Начать тренировку Вопрос — Ответ</span>
+        <span>⚡ Начать голосовой блиц-опрос с репетитором</span>
       </button>
     </div>
   </div>
 </div>
 
-<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px;">
-  <!-- Вопрос 1 -->
-  <div style="background:rgba(15,23,42,0.7);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <b style="color:#fbbf24;font-size:14px;">1. Erzählen Sie etwas über sich!</b>
+<!-- Фильтр категорий вопросов -->
+<div class="qa-filter-bar">
+  <button type="button" class="qa-filter-chip active" data-qa-filter="all" onclick="filterQaCategory('all')">
+    <span>Все темы</span> <span class="chip-count">14</span>
+  </button>
+  <button type="button" class="qa-filter-chip" data-qa-filter="intro" onclick="filterQaCategory('intro')">
+    <span>👤 О себе и опыт</span> <span class="chip-count">3</span>
+  </button>
+  <button type="button" class="qa-filter-chip" data-qa-filter="tech" onclick="filterQaCategory('tech')">
+    <span>🏭 Производство и цех</span> <span class="chip-count">4</span>
+  </button>
+  <button type="button" class="qa-filter-chip" data-qa-filter="motivation" onclick="filterQaCategory('motivation')">
+    <span>🎯 Мотивация и команда</span> <span class="chip-count">3</span>
+  </button>
+  <button type="button" class="qa-filter-chip" data-qa-filter="questions" onclick="filterQaCategory('questions')">
+    <span>❓ Вопросы шефу</span> <span class="chip-count">3</span>
+  </button>
+  <button type="button" class="qa-filter-chip" data-qa-filter="agg" onclick="filterQaCategory('agg')">
+    <span>⚖️ Закон AGG и Табу</span> <span class="chip-count">1</span>
+  </button>
+</div>
+
+<div class="qa-cards-grid">
+
+  <!-- ================= КАТЕГОРИЯ: INTRO ================= -->
+
+  <!-- ВОПРОС 1 -->
+  <div class="qa-card" data-qa-category="intro">
+    <div class="qa-card-header">
+      <span class="qa-badge qa-badge-intro">👤 01 · Selbstpräsentation</span>
+      <span style="font-size:12px;color:#94a3b8;font-weight:600;">Niveau A2/B1</span>
+    </div>
+    <div class="qa-question-box">
+      <div>
+        <h3 class="qa-question-de">1. Erzählen Sie etwas über sich!</h3>
+        <div class="qa-question-ru">Расскажите немного о себе.</div>
+      </div>
       <button type="button" onclick="speakGerman('Erzählen Sie etwas über sich!')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
     </div>
-    <div style="font-size:12px;color:#94a3b8;margin:2px 0 8px;">(Расскажите коротко о себе)</div>
-    <div style="background:rgba(0,0,0,0.25);border-radius:10px;padding:10px;margin-top:6px;display:flex;align-items:center;justify-content:space-between;">
-      <div>
-        <span style="color:#f8fafc;font-size:13px;display:block;">Ich heiße Roman, ich wohne in Ditzingen. Ich habe Erfahrung in der Produktion und bin motiviert.</span>
-        <small style="color:#94a3b8;">Меня зовут Роман, живу в Дитцингене. Есть опыт на производстве, я мотивирован.</small>
+    <div class="qa-intention-box">
+      <div class="qa-intention-title">🎯 Что проверяет работодатель:</div>
+      Умение структурировать речь за 60 секунд без биографии с детства: <b>Кто я + Мой опыт + Почему я здесь</b>.
+    </div>
+    <div class="qa-answer-box">
+      <div class="qa-answer-head">
+        <span class="qa-answer-badge">✓ Musterantwort (Образцовый ответ)</span>
+        <button type="button" onclick="speakGerman('Guten Tag! Mein Name ist Roman. Ich lebe in Ditzingen und habe praktische Erfahrung in der Produktion und Logistik. In meiner letzten Tätigkeit habe ich Maschinen bedient, Waren verpackt und auf Qualität geachtet. Ich arbeite zuverlässig, lerne schnell und möchte meine Kenntnisse gerne bei Bürger einbringen.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
       </div>
-      <button type="button" onclick="speakGerman('Ich heiße Roman, ich wohne in Ditzingen. Ich habe Erfahrung in der Produktion und bin motiviert.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
+      <p class="qa-answer-de">
+        «Guten Tag! Mein Name ist Roman. Ich lebe in Ditzingen und habe praktische <span class="qa-stress">Erfahrung</span> in der <span class="qa-stress">Produktion</span> und Logistik. In meiner letzten Tätigkeit habe ich <span class="qa-stress">Maschinen bedient</span>, Waren <span class="qa-stress">verpackt</span> und auf Qualität geachtet. Ich arbeite <span class="qa-stress">zuverlässig</span>, lerne schnell und möchte meine Kenntnisse gerne bei Bürger einbringen.»
+      </p>
+      <div class="qa-phonetics">[Гу́тен Та́г! Майн На́ме ист Ро́ман. Ихь ле́бе ин Дитцинге́н... Эр-фа́-рунг... бе-ди́нт, фер-па́кт... ЦУ́-фер-лес-сихь... айн-брин-ген]</div>
+      <div class="qa-answer-ru">
+        «Здравствуйте! Меня зовут Роман. Я живу в Дитцингене, у меня есть практический опыт на производстве и в логистике. На прошлой работе я обслуживал линии, упаковывал продукцию и контролировал качество. Я надежен, быстро учусь и хочу применить свои навыки на заводе Bürger.»
+      </div>
+    </div>
+    <div class="qa-warning-box">
+      <div class="qa-warning-title">⚠️ Typischer Fehler / Tabu:</div>
+      Не рассказывайте о детстве, семье, кредитах или поиске жилья. Не начинайте со слов «Я плохо говорю по-немецки». Говорите уверенно короткими законченными предложениями.
+    </div>
+    <div class="qa-card-footer">
+      <button type="button" class="qa-practice-btn" onclick="startDirectLesson('qa', 'interview', 'Erzählen Sie etwas über sich!')">
+        🎙 Отработать этот вопрос с Herr Weber
+      </button>
     </div>
   </div>
 
-  <!-- Вопрос 2 -->
-  <div style="background:rgba(15,23,42,0.7);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <b style="color:#fbbf24;font-size:14px;">2. Warum möchten Sie bei uns arbeiten?</b>
-      <button type="button" onclick="speakGerman('Warum möchten Sie bei uns arbeiten?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+  <!-- ВОПРОС 2 -->
+  <div class="qa-card" data-qa-category="intro">
+    <div class="qa-card-header">
+      <span class="qa-badge qa-badge-intro">👤 02 · Berufserfahrung</span>
+      <span style="font-size:12px;color:#94a3b8;font-weight:600;">Niveau A2/B1</span>
     </div>
-    <div style="font-size:12px;color:#94a3b8;margin:2px 0 8px;">(Почему вы хотите работать именно у нас?)</div>
-    <div style="background:rgba(0,0,0,0.25);border-radius:10px;padding:10px;margin-top:6px;display:flex;align-items:center;justify-content:space-between;">
+    <div class="qa-question-box">
       <div>
-        <span style="color:#f8fafc;font-size:13px;display:block;">Die Arbeit interessiert mich sehr. Bürger ist ein bekanntes Werk und ich möchte langfristig im Team arbeiten.</span>
-        <small style="color:#94a3b8;">Работа меня очень интересует. Бюргер — известный завод, и я хочу работать в команде на долгий срок.</small>
+        <h3 class="qa-question-de">2. Welche Erfahrungen bringen Sie für diese Stelle mit?</h3>
+        <div class="qa-question-ru">Какой опыт вы приносите на эту должность?</div>
       </div>
-      <button type="button" onclick="speakGerman('Die Arbeit interessiert mich sehr. Bürger ist ein bekanntes Werk und ich möchte langfristig im Team arbeiten.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
+      <button type="button" onclick="speakGerman('Welche Erfahrungen bringen Sie für diese Stelle mit?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+    </div>
+    <div class="qa-intention-box">
+      <div class="qa-intention-title">🎯 Что проверяет работодатель:</div>
+      Конкретные прикладные навыки: знает ли кандидат темп цеха, работал ли с инструментами, понимает ли дисциплину.
+    </div>
+    <div class="qa-answer-box">
+      <div class="qa-answer-head">
+        <span class="qa-answer-badge">✓ Musterantwort (Образцовый ответ)</span>
+        <button type="button" onclick="speakGerman('Ich kenne die Abläufe in der Produktion gut: Fließbandarbeit, Qualitätskontrolle und das Einhalten von Hygienevorschriften sind mir vertraut. Ich kann zügig und konzentriert arbeiten, auch bei hohem Tempo.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
+      </div>
+      <p class="qa-answer-de">
+        «Ich kenne die <span class="qa-stress">Abläufe</span> in der Produktion gut: <span class="qa-stress">Fließbandarbeit</span>, <span class="qa-stress">Qualitätskontrolle</span> und das Einhalten von <span class="qa-stress">Hygienevorschriften</span> sind mir vertraut. Ich kann <span class="qa-stress">zügig</span> und konzentriert arbeiten, auch bei hohem Tempo.»
+      </p>
+      <div class="qa-phonetics">[Аб-лой-фе ин дер Продукцьо́н... Фли́с-банд-ар-байт... Хюги-е́не-фор-шрифтен... цу́гихь унд концентри́рт]</div>
+      <div class="qa-answer-ru">
+        «Я хорошо знаю производственные процессы: работа на линии, контроль качества и соблюдение санитарных норм мне привычны. Могу работать быстро и сосредоточенно даже в высоком темпе.»
+      </div>
+    </div>
+    <div class="qa-warning-box">
+      <div class="qa-warning-title">⚠️ Typischer Fehler / Tabu:</div>
+      Фразы «Я никогда этого не делал, но мне очень нужны деньги». Если точного опыта нет, делайте упор на моторику и готовность быстро научиться: «Ich lerne neue Handgriffe in wenigen Tagen».
+    </div>
+    <div class="qa-card-footer">
+      <button type="button" class="qa-practice-btn" onclick="startDirectLesson('qa', 'interview', 'Welche Erfahrungen bringen Sie für diese Stelle mit?')">
+        🎙 Отработать этот вопрос с Herr Weber
+      </button>
     </div>
   </div>
 
-  <!-- Вопрос 3 -->
-  <div style="background:rgba(15,23,42,0.7);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <b style="color:#fbbf24;font-size:14px;">3. Haben Sie Erfahrung im Schichtbetrieb?</b>
-      <button type="button" onclick="speakGerman('Haben Sie Erfahrung im Schichtbetrieb?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+  <!-- ВОПРОС 3 -->
+  <div class="qa-card" data-qa-category="intro">
+    <div class="qa-card-header">
+      <span class="qa-badge qa-badge-intro">👤 03 · Wechselmotivation</span>
+      <span style="font-size:12px;color:#94a3b8;font-weight:600;">Niveau A2/B1</span>
     </div>
-    <div style="font-size:12px;color:#94a3b8;margin:2px 0 8px;">(Есть ли опыт работы по сменам?)</div>
-    <div style="background:rgba(0,0,0,0.25);border-radius:10px;padding:10px;margin-top:6px;display:flex;align-items:center;justify-content:space-between;">
+    <div class="qa-question-box">
       <div>
-        <span style="color:#f8fafc;font-size:13px;display:block;">Ja, Früh- und Spätschicht sind für mich kein Problem. Ich kann auch Nachtschicht machen.</span>
-        <small style="color:#94a3b8;">Да, утренняя и вечерняя смены для меня без проблем. Ночные смены тоже могу.</small>
+        <h3 class="qa-question-de">3. Warum haben Sie Ihre letzte Stelle verlassen?</h3>
+        <div class="qa-question-ru">Почему вы ушли с предыдущего места работы?</div>
       </div>
-      <button type="button" onclick="speakGerman('Ja, Früh- und Spätschicht sind für mich kein Problem. Ich kann auch Nachtschicht machen.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
+      <button type="button" onclick="speakGerman('Warum haben Sie Ihre letzte Stelle verlassen?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+    </div>
+    <div class="qa-intention-box">
+      <div class="qa-intention-title">🎯 Что проверяет работодатель:</div>
+      Лояльность, конфликтность кандидата и стабильность его планов.
+    </div>
+    <div class="qa-answer-box">
+      <div class="qa-answer-head">
+        <span class="qa-answer-badge">✓ Musterantwort (Образцовый ответ)</span>
+        <button type="button" onclick="speakGerman('Mein letzter Arbeitsvertrag war leider befristet. Ich suche jetzt eine langfristige Festanstellung bei einem stabilen Unternehmen hier in der Region Stuttgart, wo ich mich weiterentwickeln kann.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
+      </div>
+      <p class="qa-answer-de">
+        «Mein letzter Arbeitsvertrag war leider <span class="qa-stress">befristet</span>. Ich suche jetzt eine <span class="qa-stress">langfristige Festanstellung</span> bei einem stabilen Unternehmen hier in der Region Stuttgart, wo ich mich <span class="qa-stress">weiterentwickeln</span> kann.»
+      </p>
+      <div class="qa-phonetics">[бе-фри́с-тет... ланг-фри́с-тиге Фе́ст-ан-штеллунг... штаби́лен Унтер-не́ймен... вай-тер-энт-ви́к-кельн]</div>
+      <div class="qa-answer-ru">
+        «Мой предыдущий договор, к сожалению, был срочным. Сейчас я ищу постоянную стабильную работу в надежной компании в регионе Штутгарта, где смогу развиваться дальше.»
+      </div>
+    </div>
+    <div class="qa-warning-box">
+      <div class="qa-warning-title">⚠️ Typischer Fehler / Tabu:</div>
+      Категорически запрещено ругать бывшего шефа или коллег («Шеф был тираном, платили мало»). Это 100% отказ. Говорите о завершении проекта, переезде или поиске стабильного коллектива.
+    </div>
+    <div class="qa-card-footer">
+      <button type="button" class="qa-practice-btn" onclick="startDirectLesson('qa', 'interview', 'Warum haben Sie Ihre letzte Stelle verlassen?')">
+        🎙 Отработать этот вопрос с Herr Weber
+      </button>
     </div>
   </div>
 
-  <!-- Вопрос 4 -->
-  <div style="background:rgba(15,23,42,0.7);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <b style="color:#fbbf24;font-size:14px;">4. Was sind Ihre Stärken?</b>
-      <button type="button" onclick="speakGerman('Was sind Ihre Stärken?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+  <!-- ================= КАТЕГОРИЯ: TECH ================= -->
+
+  <!-- ВОПРОС 4 -->
+  <div class="qa-card" data-qa-category="tech">
+    <div class="qa-card-header">
+      <span class="qa-badge qa-badge-tech">🏭 04 · Schichtarbeit</span>
+      <span style="font-size:12px;color:#94a3b8;font-weight:600;">Niveau A2</span>
     </div>
-    <div style="font-size:12px;color:#94a3b8;margin:2px 0 8px;">(Каковы ваши сильные стороны?)</div>
-    <div style="background:rgba(0,0,0,0.25);border-radius:10px;padding:10px;margin-top:6px;display:flex;align-items:center;justify-content:space-between;">
+    <div class="qa-question-box">
       <div>
-        <span style="color:#f8fafc;font-size:13px;display:block;">Ich bin absolut pünktlich, zuverlässig und arbeite sehr sorgfältig. Ich lerne neue Aufgaben schnell.</span>
-        <small style="color:#94a3b8;">Я абсолютно пунктуален, надежен и работаю очень тщательно. Быстро осваиваю новое.</small>
+        <h3 class="qa-question-de">4. Haben Sie Erfahrung im Schichtdienst (Früh-, Spät- und Nachtschicht)?</h3>
+        <div class="qa-question-ru">Есть ли у вас опыт посменной работы (утро, вечер, ночь)?</div>
       </div>
-      <button type="button" onclick="speakGerman('Ich bin absolut pünktlich, zuverlässig und arbeite sehr sorgfältig. Ich lerne neue Aufgaben schnell.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
+      <button type="button" onclick="speakGerman('Haben Sie Erfahrung im Schichtdienst? Früh-, Spät- und Nachtschicht?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+    </div>
+    <div class="qa-intention-box">
+      <div class="qa-intention-title">🎯 Что проверяет работодатель:</div>
+      Готовность к 3 сменам, пунктуальность и транспортная доступность (как добираетесь к 05:30 утра или после 22:00).
+    </div>
+    <div class="qa-answer-box">
+      <div class="qa-answer-head">
+        <span class="qa-answer-badge">✓ Musterantwort (Образцовый ответ)</span>
+        <button type="button" onclick="speakGerman('Ja, Schichtarbeit ist für mich absolut kein Problem. Ich habe bereits im 3-Schicht-System gearbeitet. Ich bin körperlich fit und mein Arbeitsweg nach Ditzingen ist kurz und gesichert.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
+      </div>
+      <p class="qa-answer-de">
+        «Ja, <span class="qa-stress">Schichtarbeit</span> ist für mich absolut kein Problem. Ich habe bereits im <span class="qa-stress">3-Schicht-System</span> gearbeitet. Ich bin körperlich fit und mein <span class="qa-stress">Arbeitsweg</span> nach Ditzingen ist kurz und gesichert.»
+      </p>
+      <div class="qa-phonetics">[Ши́хьт-ар-байт... драй-ши́хьт зюсте́м... кёр-пер-лихь фит... ар-байтс-вег ге-зи́-херт]</div>
+      <div class="qa-answer-ru">
+        «Да, посменная работа для меня абсолютно не проблема. Я уже работал в трехсменном режиме. Я в хорошей физической форме, а дорога на работу в Дитцинген быстрая и надежная.»
+      </div>
+    </div>
+    <div class="qa-warning-box">
+      <div class="qa-warning-title">⚠️ Typischer Fehler / Tabu:</div>
+      «В ночную смену я не могу, потому что тяжело просыпаться». Если у вас нет машины, уточните: «S-Bahn fährt pünktlich / Ich fahre mit dem Fahrrad».
+    </div>
+    <div class="qa-card-footer">
+      <button type="button" class="qa-practice-btn" onclick="startDirectLesson('qa', 'interview', 'Haben Sie Erfahrung im Schichtdienst?')">
+        🎙 Отработать этот вопрос с Herr Weber
+      </button>
     </div>
   </div>
 
-  <!-- Вопрос 5 -->
-  <div style="background:rgba(15,23,42,0.7);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <b style="color:#fbbf24;font-size:14px;">5. Können Sie körperlich arbeiten?</b>
-      <button type="button" onclick="speakGerman('Können Sie körperlich arbeiten?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+  <!-- ВОПРОС 5 -->
+  <div class="qa-card" data-qa-category="tech">
+    <div class="qa-card-header">
+      <span class="qa-badge qa-badge-tech">🏭 05 · Arbeitssicherheit</span>
+      <span style="font-size:12px;color:#94a3b8;font-weight:600;">Niveau A2/B1</span>
     </div>
-    <div style="font-size:12px;color:#94a3b8;margin:2px 0 8px;">(Можете ли вы работать физически?)</div>
-    <div style="background:rgba(0,0,0,0.25);border-radius:10px;padding:10px;margin-top:6px;display:flex;align-items:center;justify-content:space-between;">
+    <div class="qa-question-box">
       <div>
-        <span style="color:#f8fafc;font-size:13px;display:block;">Ja, ich bin belastbar und fit. Kisten heben und am Fließband stehen ist für mich in Ordnung.</span>
-        <small style="color:#94a3b8;">Да, я выносливый и в форме. Поднимать коробки и стоять на ленте для меня в порядке вещей.</small>
+        <h3 class="qa-question-de">5. Was machen Sie, wenn an der Maschine eine Störung auftritt?</h3>
+        <div class="qa-question-ru">Что вы сделаете, если на линии возникнет неисправность?</div>
       </div>
-      <button type="button" onclick="speakGerman('Ja, ich bin belastbar und fit. Kisten heben und am Fließband stehen ist für mich in Ordnung.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
+      <button type="button" onclick="speakGerman('Was machen Sie, wenn an der Maschine eine Störung auftritt?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+    </div>
+    <div class="qa-intention-box">
+      <div class="qa-intention-title">🎯 Что проверяет работодатель:</div>
+      Соблюдение регламентов безопасности (Not-Aus) и отсутствие опасной самодеятельности.
+    </div>
+    <div class="qa-answer-box">
+      <div class="qa-answer-head">
+        <span class="qa-answer-badge">✓ Musterantwort (Образцовый ответ)</span>
+        <button type="button" onclick="speakGerman('Sicherheit steht an erster Stelle: Ich drücke sofort den Not-Aus-Schalter, wenn Gefahr droht, schalte die Anlage ab und informiere unverzüglich den Schichtleiter oder Techniker. Ich repariere nichts eigenmächtig.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
+      </div>
+      <p class="qa-answer-de">
+        «<span class="qa-stress">Sicherheit</span> steht an erster Stelle: Ich drücke sofort den <span class="qa-stress">Not-Aus-Schalter</span>, wenn Gefahr droht, schalte die Anlage ab und informiere <span class="qa-stress">unverzüglich</span> den Schichtleiter oder Techniker. Ich repariere nichts <span class="qa-stress">eigenmächtig</span>.»
+      </p>
+      <div class="qa-phonetics">[Зи́-хер-хайт штейт ан э́р-стер Ште́лле... НОТ-АУС-Ша́льтер... ун-фер-цю́глихь ден Ши́хьт-ляйтер... ай-ген-ме́хь-тихь]</div>
+      <div class="qa-answer-ru">
+        «Безопасность на первом месте: при опасности я сразу нажимаю кнопку аварийного останова (Not-Aus), отключаю установку и немедленно сообщаю бригадиру или технику. Самовольно ничего не чиню.»
+      </div>
+    </div>
+    <div class="qa-warning-box">
+      <div class="qa-warning-title">⚠️ Typischer Fehler / Tabu:</div>
+      «Я сам полезу внутрь станка с отверткой». В Германии это грубейшее нарушение норм Berufsgenossenschaft, влекущее мгновенное увольнение.
+    </div>
+    <div class="qa-card-footer">
+      <button type="button" class="qa-practice-btn" onclick="startDirectLesson('qa', 'interview', 'Was machen Sie, wenn an der Maschine eine Störung auftritt?')">
+        🎙 Отработать этот вопрос с Herr Weber
+      </button>
     </div>
   </div>
 
-  <!-- Вопрос 6 -->
-  <div style="background:rgba(15,23,42,0.7);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <b style="color:#fbbf24;font-size:14px;">6. Wann können Sie anfangen?</b>
-      <button type="button" onclick="speakGerman('Wann können Sie anfangen?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+  <!-- ВОПРОС 6 -->
+  <div class="qa-card" data-qa-category="tech">
+    <div class="qa-card-header">
+      <span class="qa-badge qa-badge-tech">🏭 06 · Hygiene (HACCP)</span>
+      <span style="font-size:12px;color:#94a3b8;font-weight:600;">Niveau A2/B1</span>
     </div>
-    <div style="font-size:12px;color:#94a3b8;margin:2px 0 8px;">(Когда вы готовы приступить к работе?)</div>
-    <div style="background:rgba(0,0,0,0.25);border-radius:10px;padding:10px;margin-top:6px;display:flex;align-items:center;justify-content:space-between;">
+    <div class="qa-question-box">
       <div>
-        <span style="color:#f8fafc;font-size:13px;display:block;">Ich kann ab sofort anfangen, oder ab nächster Woche Montag.</span>
-        <small style="color:#94a3b8;">Я могу начать прямо сейчас или со следующей недели в понедельник.</small>
+        <h3 class="qa-question-de">6. Kennen Sie die Hygienevorschriften in der Lebensmittelindustrie?</h3>
+        <div class="qa-question-ru">Знакомы ли вы с санитарными нормами в пищепроме (HACCP)?</div>
       </div>
-      <button type="button" onclick="speakGerman('Ich kann ab sofort anfangen, oder ab nächster Woche Montag.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
+      <button type="button" onclick="speakGerman('Kennen Sie die Hygienevorschriften in der Lebensmittelindustrie?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+    </div>
+    <div class="qa-intention-box">
+      <div class="qa-intention-title">🎯 Что проверяет работодатель:</div>
+      Готовность строго соблюдать санитарию (спецодежда, шапочка, запрет колец/украшений, мытье рук, закон IfSG §43).
+    </div>
+    <div class="qa-answer-box">
+      <div class="qa-answer-head">
+        <span class="qa-answer-badge">✓ Musterantwort (Образцовый ответ)</span>
+        <button type="button" onclick="speakGerman('Ja, Hygiene ist bei Lebensmitteln entscheidend: Schutzkleidung tragen, Haarnetz und Handschuhe benutzen, Hände gründlich desinfizieren und keinen Schmuck tragen. Die Belehrung nach dem Infektionsschutzgesetz habe ich absolviert.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
+      </div>
+      <p class="qa-answer-de">
+        «Ja, <span class="qa-stress">Hygiene</span> ist bei Lebensmitteln entscheidend: <span class="qa-stress">Schutzkleidung</span> tragen, <span class="qa-stress">Haarnetz</span> und Handschuhe benutzen, Hände gründlich <span class="qa-stress">desinfizieren</span> und keinen Schmuck tragen. Die Belehrung nach dem <span class="qa-stress">Infektionsschutzgesetz</span> habe ich absolviert.»
+      </p>
+      <div class="qa-phonetics">[Хюги-е́не ист энт-шай-дент... Шу́тц-клай-дунг... Ха́ар-нетц... дес-ин-фици́-рен... Инфекцьо́нс-шутц-гезетц]</div>
+      <div class="qa-answer-ru">
+        «Да, гигиена в пищепроме имеет решающее значение: носить спецодежду, шапочку и перчатки, тщательно дезинфицировать руки и не носить украшений. Инструктаж по защите от инфекций (Belehrung) я прошел.»
+      </div>
+    </div>
+    <div class="qa-warning-box">
+      <div class="qa-warning-title">⚠️ Typischer Fehler / Tabu:</div>
+      Сказать, что кольца или часы не мешают. На пищевом комбинате (Bürger) наличие часов, сережек или накладных ногтей недопустимо.
+    </div>
+    <div class="qa-card-footer">
+      <button type="button" class="qa-practice-btn" onclick="startDirectLesson('qa', 'interview', 'Kennen Sie die Hygienevorschriften in der Lebensmittelindustrie?')">
+        🎙 Отработать этот вопрос с Herr Weber
+      </button>
     </div>
   </div>
+
+  <!-- ВОПРОС 7 -->
+  <div class="qa-card" data-qa-category="tech">
+    <div class="qa-card-header">
+      <span class="qa-badge qa-badge-tech">🏭 07 · Belastbarkeit</span>
+      <span style="font-size:12px;color:#94a3b8;font-weight:600;">Niveau A2</span>
+    </div>
+    <div class="qa-question-box">
+      <div>
+        <h3 class="qa-question-de">7. Wie gehen Sie mit körperlicher Belastung oder Monotonie um?</h3>
+        <div class="qa-question-ru">Как вы справляетесь с физической нагрузкой и монотонностью?</div>
+      </div>
+      <button type="button" onclick="speakGerman('Wie gehen Sie mit körperlicher Belastung oder Monotonie um?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+    </div>
+    <div class="qa-intention-box">
+      <div class="qa-intention-title">🎯 Что проверяет работодатель:</div>
+      Выносливость (8 часов на ногах, подъем коробок 15 кг, монотонная упаковка) без потери концентрации.
+    </div>
+    <div class="qa-answer-box">
+      <div class="qa-answer-head">
+        <span class="qa-answer-badge">✓ Musterantwort (Образцовый ответ)</span>
+        <button type="button" onclick="speakGerman('Ich bin körperliche Arbeit gewohnt und halte mich fit. Bei sich wiederholenden Aufgaben bleibe ich aufmerksam und achte auf fehlerfreie Handgriffe. Ergonomisches Arbeiten ist mir wichtig.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
+      </div>
+      <p class="qa-answer-de">
+        «Ich bin <span class="qa-stress">körperliche Arbeit</span> gewohnt und halte mich fit. Bei sich wiederholenden Aufgaben bleibe ich <span class="qa-stress">aufmerksam</span> und achte auf <span class="qa-stress">fehlerfreie</span> Handgriffe. <span class="qa-stress">Ergonomisches</span> Arbeiten ist mir wichtig.»
+      </p>
+      <div class="qa-phonetics">[кёр-пер-лихе Ар-байт ге-во́нт... ауф-ме́рк-зам... фе́й-лер-фрайе Ханд-гри́ф-фе... эр-го-но́-мишес]</div>
+      <div class="qa-answer-ru">
+        «Я привык к физическому труду и держу себя в форме. При повторяющихся операциях остаюсь внимательным и слежу за безошибочностью движений. Правильная эргономика для меня важна.»
+      </div>
+    </div>
+    <div class="qa-warning-box">
+      <div class="qa-warning-title">⚠️ Typischer Fehler / Tabu:</div>
+      «У меня побаливает поясница, но я потерплю». Это сразу вызывает опасения длительного больничного. Подчеркивайте выносливость и правильную технику подъема тяжестей.
+    </div>
+    <div class="qa-card-footer">
+      <button type="button" class="qa-practice-btn" onclick="startDirectLesson('qa', 'interview', 'Wie gehen Sie mit körperlicher Belastung um?')">
+        🎙 Отработать этот вопрос с Herr Weber
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= КАТЕГОРИЯ: MOTIVATION ================= -->
+
+  <!-- ВОПРОС 8 -->
+  <div class="qa-card" data-qa-category="motivation">
+    <div class="qa-card-header">
+      <span class="qa-badge qa-badge-motivation">🎯 08 · Firmenmotivation</span>
+      <span style="font-size:12px;color:#94a3b8;font-weight:600;">Niveau A2/B1</span>
+    </div>
+    <div class="qa-question-box">
+      <div>
+        <h3 class="qa-question-de">8. Warum möchten Sie ausgerechnet bei Bürger arbeiten?</h3>
+        <div class="qa-question-ru">Почему вы хотите работать именно на заводе Bürger?</div>
+      </div>
+      <button type="button" onclick="speakGerman('Warum möchten Sie ausgerechnet bei Bürger arbeiten?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+    </div>
+    <div class="qa-intention-box">
+      <div class="qa-intention-title">🎯 Что проверяет работодатель:</div>
+      Знает ли соискатель продукцию фабрики и ищет ли он долгосрочное стабильное место, а не временную подработку.
+    </div>
+    <div class="qa-answer-box">
+      <div class="qa-answer-head">
+        <span class="qa-answer-badge">✓ Musterantwort (Образцовый ответ)</span>
+        <button type="button" onclick="speakGerman('Bürger ist ein bekanntes Traditionsunternehmen mit hervorragendem Ruf und leckeren Spezialitäten. Ich schätze einen krisensicheren Arbeitsplatz und das kollegiale Arbeitsklima. Hier möchte ich ein verlässlicher Teil des Teams sein.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
+      </div>
+      <p class="qa-answer-de">
+        «Bürger ist ein bekanntes <span class="qa-stress">Traditionsunternehmen</span> mit hervorragendem Ruf und leckeren Spezialitäten. Ich schätze einen <span class="qa-stress">krisensicheren Arbeitsplatz</span> und das kollegiale Arbeitsklima. Hier möchte ich ein <span class="qa-stress">verlässlicher</span> Teil des Teams sein.»
+      </p>
+      <div class="qa-phonetics">[Тра-ди-цьо́нс-унтер-неймен... кри́-зен-зи́-херен Ар-байтс-платц... фер-ле́с-лихь-ер Тайль]</div>
+      <div class="qa-answer-ru">
+        «Bürger — известная традиционная компания с отличной репутацией и вкусной продукцией. Я ценю защищенное от кризисов рабочее место и дружный коллектив. Здесь я хочу быть надежной частью команды.»
+      </div>
+    </div>
+    <div class="qa-warning-box">
+      <div class="qa-warning-title">⚠️ Typischer Fehler / Tabu:</div>
+      «Мне всё равно, где работать, лишь бы платили» или «Меня сюда направил Jobcenter». Работодателю важно видеть уважение к бренду.
+    </div>
+    <div class="qa-card-footer">
+      <button type="button" class="qa-practice-btn" onclick="startDirectLesson('qa', 'interview', 'Warum möchten Sie bei Bürger arbeiten?')">
+        🎙 Отработать этот вопрос с Herr Weber
+      </button>
+    </div>
+  </div>
+
+  <!-- ВОПРОС 9 -->
+  <div class="qa-card" data-qa-category="motivation">
+    <div class="qa-card-header">
+      <span class="qa-badge qa-badge-motivation">🎯 09 · Stärken</span>
+      <span style="font-size:12px;color:#94a3b8;font-weight:600;">Niveau A2</span>
+    </div>
+    <div class="qa-question-box">
+      <div>
+        <h3 class="qa-question-de">9. Was sind Ihre drei größten Stärken?</h3>
+        <div class="qa-question-ru">Каковы ваши три главные сильные стороны?</div>
+      </div>
+      <button type="button" onclick="speakGerman('Was sind Ihre drei größten Stärken?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+    </div>
+    <div class="qa-intention-box">
+      <div class="qa-intention-title">🎯 Что проверяет работодатель:</div>
+      Соответствие немецким трудовым ценностям: Pünktlichkeit, Zuverlässigkeit, Teamfähigkeit.
+    </div>
+    <div class="qa-answer-box">
+      <div class="qa-answer-head">
+        <span class="qa-answer-badge">✓ Musterantwort (Образцовый ответ)</span>
+        <button type="button" onclick="speakGerman('Meine drei Stärken sind: absolute Pünktlichkeit, hohe Sorgfalt bei der Arbeit und Teamgeist. Wenn ein Kollege Unterstützung braucht, packe ich sofort mit an. Auf mich kann sich der Schichtleiter immer verlassen.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
+      </div>
+      <p class="qa-answer-de">
+        «Meine drei Stärken sind: absolute <span class="qa-stress">Pünktlichkeit</span>, hohe <span class="qa-stress">Sorgfalt</span> bei der Arbeit und <span class="qa-stress">Teamgeist</span>. Wenn ein Kollege Unterstützung braucht, packe ich sofort mit an. Auf mich kann sich der Schichtleiter immer <span class="qa-stress">verlassen</span>.»
+      </p>
+      <div class="qa-phonetics">[аб-зо-лю́те Пю́нкт-лихь-кайт... Зо́рг-фальт... Ти́м-гайст... фер-ла́с-сен]</div>
+      <div class="qa-answer-ru">
+        «Мои три сильные стороны: абсолютная пунктуальность, высокая тщательность в работе и командный дух. Если коллеге нужна помощь, я сразу подключаюсь. Бригадир всегда может на меня положиться.»
+      </div>
+    </div>
+    <div class="qa-warning-box">
+      <div class="qa-warning-title">⚠️ Typischer Fehler / Tabu:</div>
+      «У меня нет недостатков, я идеален» или абстрактные фразы. Приводите рабочие примеры: прихожу на 10 минут раньше, проверяю маркировку дважды.
+    </div>
+    <div class="qa-card-footer">
+      <button type="button" class="qa-practice-btn" onclick="startDirectLesson('qa', 'interview', 'Was sind Ihre Stärken?')">
+        🎙 Отработать этот вопрос с Herr Weber
+      </button>
+    </div>
+  </div>
+
+  <!-- ВОПРОС 10 -->
+  <div class="qa-card" data-qa-category="motivation">
+    <div class="qa-card-header">
+      <span class="qa-badge qa-badge-motivation">🎯 10 · Konfliktfähigkeit</span>
+      <span style="font-size:12px;color:#94a3b8;font-weight:600;">Niveau A2/B1</span>
+    </div>
+    <div class="qa-question-box">
+      <div>
+        <h3 class="qa-question-de">10. Wie reagieren Sie bei Meinungsverschiedenheiten im Team?</h3>
+        <div class="qa-question-ru">Как вы реагируете на разногласия в коллективе?</div>
+      </div>
+      <button type="button" onclick="speakGerman('Wie reagieren Sie bei Meinungsverschiedenheiten im Team?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+    </div>
+    <div class="qa-intention-box">
+      <div class="qa-intention-title">🎯 Что проверяет работодатель:</div>
+      Умение сохранять спокойствие (Sachlichkeit) и решать рабочие вопросы без скандалов и обид.
+    </div>
+    <div class="qa-answer-box">
+      <div class="qa-answer-head">
+        <span class="qa-answer-badge">✓ Musterantwort (Образцовый ответ)</span>
+        <button type="button" onclick="speakGerman('Ich bleibe stets ruhig und sachlich. Wir sprechen im Team direkt und respektvoll über die Situation. Es geht um die gemeinsame Arbeit, darum finden wir eine praktische Lösung. Wenn nötig, fragen wir den Schichtleiter.')" class="row-speak-btn" title="Слушать ответ">🔊</button>
+      </div>
+      <p class="qa-answer-de">
+        «Ich bleibe stets <span class="qa-stress">ruhig und sachlich</span>. Wir sprechen im Team direkt und <span class="qa-stress">respektvoll</span> über die Situation. Es geht um die gemeinsame Arbeit, darum finden wir eine <span class="qa-stress">praktische Lösung</span>. Wenn nötig, fragen wir den Schichtleiter.»
+      </p>
+      <div class="qa-phonetics">[ру́-ихь унд за́х-лихь... ре-спект-фо́ль... пра́к-тише Лё́-зунг]</div>
+      <div class="qa-answer-ru">
+        «Я всегда остаюсь спокойным и говорю по делу. Мы прямо и уважительно обсуждаем ситуацию в команде. Главное — общая работа, поэтому мы находим практическое решение. При необходимости советуемся с бригадиром.»
+      </div>
+    </div>
+    <div class="qa-warning-box">
+      <div class="qa-warning-title">⚠️ Typischer Fehler / Tabu:</div>
+      «Я сразу начинаю спорить» или «Я замыкаюсь и ни с кем не разговариваю». В немецкой культуре ценится открытое, вежливое и конструктивное обсуждение (*sachliche Kommunikation*).
+    </div>
+    <div class="qa-card-footer">
+      <button type="button" class="qa-practice-btn" onclick="startDirectLesson('qa', 'interview', 'Wie reagieren Sie bei Meinungsverschiedenheiten im Team?')">
+        🎙 Отработать этот вопрос с Herr Weber
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= КАТЕГОРИЯ: QUESTIONS (СОИСКАТЕЛЬ СПРАШИВАЕТ) ================= -->
+
+  <!-- ВОПРОС 11 -->
+  <div class="qa-card" data-qa-category="questions">
+    <div class="qa-card-header">
+      <span class="qa-badge qa-badge-questions">❓ 11 · Frage an Chef: Einarbeitung</span>
+      <span style="font-size:12px;color:#94a3b8;font-weight:600;">Niveau B1</span>
+    </div>
+    <div class="qa-question-box">
+      <div>
+        <h3 class="qa-question-de">11. Wie läuft die Einarbeitung in den ersten Wochen ab?</h3>
+        <div class="qa-question-ru">Как устроена стажировка и ввод в должность в первые недели?</div>
+      </div>
+      <button type="button" onclick="speakGerman('Wie läuft die Einarbeitung für neue Mitarbeiter in den ersten Wochen ab?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+    </div>
+    <div class="qa-intention-box">
+      <div class="qa-intention-title">🎯 Почему этот вопрос звучит выигрышно:</div>
+      Показывает работодателю, что вы ответственно подходите к освоению линии и хотите минимизировать ошибки с первого дня.
+    </div>
+    <div class="qa-answer-box">
+      <div class="qa-answer-head">
+        <span class="qa-answer-badge">✓ Musterfrage (Формулировка для собеседования)</span>
+        <button type="button" onclick="speakGerman('Könnten Sie mir bitte kurz erklären, wie die Einarbeitung an der Anlage abläuft? Gibt es einen festen Paten oder Ansprechpartner, der mir die Handgriffe zeigt?')" class="row-speak-btn" title="Слушать фразу">🔊</button>
+      </div>
+      <p class="qa-answer-de">
+        «Könnten Sie mir bitte kurz erklären, wie die <span class="qa-stress">Einarbeitung</span> an der Anlage abläuft? Gibt es einen festen <span class="qa-stress">Paten</span> oder Ansprechpartner, der mir die Handgriffe zeigt?»
+      </p>
+      <div class="qa-phonetics">[Кё́н-тен Зи мир энт-кле́-рен... Айн-ар-бай-тунг... фе́с-тен Па́-тен... Ан-шпрехь-парт-нер]</div>
+      <div class="qa-answer-ru">
+        «Не могли бы вы пояснить, как устроена стажировка на линии? Будет ли закреплен постоянный наставник (Pate), который покажет все рабочие движения?»
+      </div>
+    </div>
+    <div class="qa-pro-box">
+      <div class="qa-pro-title">💡 Pro-Tipp (Немецкий этикет):</div>
+      Слово <b>Pate</b> (наставник/шеф-инструктор) звучит очень профессионально и демонстрирует глубокое знание немецкой производственной традиции наставничества.
+    </div>
+    <div class="qa-card-footer">
+      <button type="button" class="qa-practice-btn" onclick="startDirectLesson('qa', 'interview', 'Frage an Arbeitgeber: Einarbeitung und Pate')">
+        🎙 Отработать этот вопрос с Herr Weber
+      </button>
+    </div>
+  </div>
+
+  <!-- ВОПРОС 12 -->
+  <div class="qa-card" data-qa-category="questions">
+    <div class="qa-card-header">
+      <span class="qa-badge qa-badge-questions">❓ 12 · Frage an Chef: Weiterbildung</span>
+      <span style="font-size:12px;color:#94a3b8;font-weight:600;">Niveau B1</span>
+    </div>
+    <div class="qa-question-box">
+      <div>
+        <h3 class="qa-question-de">12. Welche internen Schulungen oder Weiterbildungen gibt es?</h3>
+        <div class="qa-question-ru">Какие внутренние курсы или возможности обучения есть на заводе?</div>
+      </div>
+      <button type="button" onclick="speakGerman('Welche Schulungen oder Weiterbildungsmöglichkeiten gibt es im Betrieb?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+    </div>
+    <div class="qa-intention-box">
+      <div class="qa-intention-title">🎯 Почему этот вопрос звучит выигрышно:</div>
+      Показывает готовность расти внутри предприятия (например, сдать на права на электропогрузчик *Staplerschein* или повысить разряд).
+    </div>
+    <div class="qa-answer-box">
+      <div class="qa-answer-head">
+        <span class="qa-answer-badge">✓ Musterfrage (Формулировка для собеседования)</span>
+        <button type="button" onclick="speakGerman('Bietet das Unternehmen interne Schulungen an, beispielsweise für bestimmte Anlagen, den Gabelstaplerschein oder berufsbezogenes Deutsch? Ich möchte mich gerne langfristig weiterentwickeln.')" class="row-speak-btn" title="Слушать фразу">🔊</button>
+      </div>
+      <p class="qa-answer-de">
+        «Bietet das Unternehmen interne <span class="qa-stress">Schulungen</span> an, beispielsweise für bestimmte Anlagen, den <span class="qa-stress">Gabelstaplerschein</span> oder berufsbezogenes Deutsch? Ich möchte mich gerne langfristig weiterentwickeln.»
+      </p>
+      <div class="qa-phonetics">[Шу́-лун-ген... Га́-бель-штап-лер-шайн... бе-руфс-бе-цо́-генес Дойч... вай-тер-энт-ви́к-кельн]</div>
+      <div class="qa-answer-ru">
+        «Проводит ли предприятие внутренние тренинги, например, на управление оборудованием, права на автопогрузчик (Staplerschein) или профессиональный немецкий? Я хочу развиваться здесь на долгий срок.»
+      </div>
+    </div>
+    <div class="qa-pro-box">
+      <div class="qa-pro-title">💡 Pro-Tipp (Немецкий этикет):</div>
+      Немецкие заводы охотно оплачивают сотрудникам курсы и сертификаты (например, IHK или Staplerschein), если видят преданность компании.
+    </div>
+    <div class="qa-card-footer">
+      <button type="button" class="qa-practice-btn" onclick="startDirectLesson('qa', 'interview', 'Frage an Arbeitgeber: Staplerschein und Weiterbildung')">
+        🎙 Отработать этот вопрос с Herr Weber
+      </button>
+    </div>
+  </div>
+
+  <!-- ВОПРОС 13 -->
+  <div class="qa-card" data-qa-category="questions">
+    <div class="qa-card-header">
+      <span class="qa-badge qa-badge-questions">❓ 13 · Abschlussfrage</span>
+      <span style="font-size:12px;color:#94a3b8;font-weight:600;">Niveau A2/B1</span>
+    </div>
+    <div class="qa-question-box">
+      <div>
+        <h3 class="qa-question-de">13. Wann darf ich mit einer Rückmeldung rechnen?</h3>
+        <div class="qa-question-ru">Когда ориентировочно можно ожидать вашего решения и ответа?</div>
+      </div>
+      <button type="button" onclick="speakGerman('Wann darf ich mit einer Rückmeldung von Ihnen rechnen?')" class="row-speak-btn" title="Слушать вопрос">🔊</button>
+    </div>
+    <div class="qa-intention-box">
+      <div class="qa-intention-title">🎯 Почему этот вопрос звучит выигрышно:</div>
+      Классический вежливый финал собеседования в Германии, проясняющий таймлайн принятия решения.
+    </div>
+    <div class="qa-answer-box">
+      <div class="qa-answer-head">
+        <span class="qa-answer-badge">✓ Musterfrage (Формулировка для собеседования)</span>
+        <button type="button" onclick="speakGerman('Vielen herzlichen Dank für das angenehme und informative Gespräch. Bis wann darf ich ungefähr mit einer Rückmeldung von Ihnen rechnen?')" class="row-speak-btn" title="Слушать фразу">🔊</button>
+      </div>
+      <p class="qa-answer-de">
+        «<span class="qa-stress">Vielen herzlichen Dank</span> für das angenehme und informative Gespräch. Bis wann darf ich ungefähr mit einer <span class="qa-stress">Rückmeldung</span> von Ihnen rechnen?»
+      </p>
+      <div class="qa-phonetics">[Фи́-лен хе́рц-лихь-ен Да́нк... ан-ге-не́й-мес Ге-шпре́хь... Рю́к-мель-дунг]</div>
+      <div class="qa-answer-ru">
+        «Большое спасибо за приятную и содержательную беседу. Подскажите, пожалуйста, к какому числу примерно ожидать решения?»
+      </div>
+    </div>
+    <div class="qa-pro-box">
+      <div class="qa-pro-title">💡 Pro-Tipp (Немецкий этикет):</div>
+      Если работодатель назовет срок (например, «до пятницы»), не звоните раньше пятницы. Если ответа нет к понедельнику — можно отправить вежливый e-mail с напоминанием.
+    </div>
+    <div class="qa-card-footer">
+      <button type="button" class="qa-practice-btn" onclick="startDirectLesson('qa', 'interview', 'Abschluss des Gesprächs: Rückmeldung')">
+        🎙 Отработать этот вопрос с Herr Weber
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= КАТЕГОРИЯ: AGG & TABU ================= -->
+
+  <!-- КАРТОЧКА 14: AGG -->
+  <div class="qa-card" data-qa-category="agg">
+    <div class="qa-card-header">
+      <span class="qa-badge qa-badge-agg">⚖️ 14 · Recht zur Lüge (AGG)</span>
+      <span style="font-size:12px;color:#f87171;font-weight:700;">Deutsches Arbeitsrecht</span>
+    </div>
+    <div class="qa-question-box">
+      <div>
+        <h3 class="qa-question-de" style="color:#f87171;">Закон AGG: Запрещенные вопросы работодателя и ваше право на ложь</h3>
+        <div class="qa-question-ru">Allgemeines Gleichbehandlungsgesetz — защита соискателя в Германии</div>
+      </div>
+    </div>
+    <div class="qa-intention-box" style="border-left-color:#ef4444;background:rgba(239,68,68,0.08);">
+      <div class="qa-intention-title" style="color:#f87171;">⚖️ Ваши юридические права по закону Германии:</div>
+      По немецкому трудовому законодательству (AGG §1, §7) работодатель <b>НЕ ИМЕЕТ ПРАВА</b> задавать личные вопросы. Если такой вопрос прозвучал, закон дает соискателю официальное <b>«Recht zur Lüge»</b> (право солгать без юридических последствий).
+    </div>
+    
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:10px;margin-bottom:12px;">
+      <div style="background:rgba(0,0,0,0.35);border:1px solid rgba(239,68,68,0.25);border-radius:10px;padding:10px;">
+        <b style="color:#f87171;font-size:12px;display:block;margin-bottom:4px;">❌ Запрещенные темы:</b>
+        <ul style="margin:0;padding-left:16px;font-size:12px;color:#cbd5e1;line-height:1.45;">
+          <li>Беременность и дети (Schwangerschaft, Kinderplanung)</li>
+          <li>Семейное положение (verheiratet / ledig)</li>
+          <li>Религия и церковь (Religion, Kirchenaustritt)</li>
+          <li>Политика и партии (Politische Gesinnung)</li>
+          <li>Хронические болезни (Krankheiten, Diagnosen)</li>
+        </ul>
+      </div>
+      <div style="background:rgba(0,0,0,0.35);border:1px solid rgba(52,211,153,0.25);border-radius:10px;padding:10px;">
+        <b style="color:#34d399;font-size:12px;display:block;margin-bottom:4px;">✓ Дипломатичный ответ:</b>
+        <p style="font-size:12px;color:#f8fafc;margin:0 0 4px 0;line-height:1.4;">
+          «Ich konzentriere mich voll auf meine beruflichen Aufgaben und bringe volle Einsatzbereitschaft mit.»
+        </p>
+        <small style="color:#94a3b8;font-size:11px;display:block;">
+          (Я полностью сосредоточен на рабочих задачах и готов работать с максимальной отдачей.)
+        </small>
+      </div>
+    </div>
+
+    <div class="qa-card-footer">
+      <button type="button" class="qa-practice-btn" onclick="startDirectLesson('qa', 'interview', 'AGG und verbotene Fragen im Bewerbungsgespräch')">
+        🎙 Отработать ответы на каверзные вопросы с Herr Weber
+      </button>
+    </div>
+  </div>
+
 </div>
 </section>
 
@@ -1354,76 +2327,253 @@ var situationTasks=[
 var learnedWords={},srsReviews=0,activeDeck=[],deckCategory="all",deckIndex=0,currentGame="choice",gameRound=0,gamePoints=0,gameLocked=false,gameTotal=12,orderChosen=[],pairFirst=null,pairsLeft=0;
 function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
 
-// --- СТУДИЙНАЯ НЕМЕЦКАЯ ОЗВУЧКА (Google Neural TTS + SpeechSynthesis Fallback) ---
-var cachedDeVoice = null;
-var activeTtsAudio = null;
+// =======================================================================
+// УЛЬТРА-РЕАЛИСТИЧНАЯ ОЗВУЧКА MICROSOFT NEURAL V2 + 100% ПОДДЕРЖКА IPHONE (iOS Safari)
+// =======================================================================
+var ttsAudioCtx = null;
+var ttsBufferCache = new Map(); // url -> decoded AudioBuffer (кэш в RAM для мгновенного 0мс отклика)
+var activeSourceNode = null;
+var sharedAudioEl = null;
+var isIosAudioUnlocked = false;
+var activePlayingBtn = null;
 
-function getGermanVoice() {
-  if (cachedDeVoice) return cachedDeVoice;
-  if (!('speechSynthesis' in window)) return null;
-  var voices = window.speechSynthesis.getVoices();
-  if (!voices || !voices.length) return null;
-  cachedDeVoice = voices.find(function(v) {
-    return v.lang && (v.lang === 'de-DE' || v.lang === 'de_DE') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Premium'));
-  }) || voices.find(function(v) {
-    return v.lang && v.lang.startsWith('de');
-  }) || null;
-  return cachedDeVoice;
-}
-if ('speechSynthesis' in window) {
-  window.speechSynthesis.onvoiceschanged = function() {
-    cachedDeVoice = null;
-    getGermanVoice();
-  };
+// Инициализация единого HTMLAudio для fallback (без утечек памяти на iOS WebKit)
+function getSharedAudioElement() {
+  if (!sharedAudioEl && typeof document !== 'undefined') {
+    sharedAudioEl = document.createElement('audio');
+    sharedAudioEl.id = 'sharedIosTtsAudio';
+    sharedAudioEl.setAttribute('playsinline', '');
+    sharedAudioEl.setAttribute('webkit-playsinline', '');
+    sharedAudioEl.preload = 'auto';
+    sharedAudioEl.style.display = 'none';
+    document.body.appendChild(sharedAudioEl);
+  }
+  return sharedAudioEl;
 }
 
-function fallbackSpeak(clean) {
-  if (!('speechSynthesis' in window)) return;
+// Надежное декодирование AudioData для всех версий Safari (iOS 12-18+)
+function decodeAudioCompat(ctx, arrayBuffer) {
+  return new Promise(function(resolve, reject) {
+    try {
+      var p = ctx.decodeAudioData(arrayBuffer.slice(0), function(decoded) {
+        resolve(decoded);
+      }, function(err) {
+        reject(err);
+      });
+      if (p && typeof p.then === 'function') {
+        p.then(resolve).catch(reject);
+      }
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+// Разблокировка звука на iOS (при первом тапе пользователя) — обходит физический Silent Switch!
+function unlockIosAudioPipeline() {
+  if (isIosAudioUnlocked) return;
   try {
-    window.speechSynthesis.cancel();
-    var utter = new SpeechSynthesisUtterance(clean);
-    utter.lang = 'de-DE';
-    utter.rate = 0.92;
-    var voice = getGermanVoice();
-    if (voice) utter.voice = voice;
-    window.speechSynthesis.speak(utter);
-  } catch (err) {
-    console.warn('Fallback TTS error:', err);
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (AC && !ttsAudioCtx) {
+      ttsAudioCtx = new AC({ latencyHint: 'interactive' });
+    }
+    if (ttsAudioCtx && ttsAudioCtx.state === 'suspended') {
+      ttsAudioCtx.resume().catch(function() {});
+    }
+    // Воспроизводим тихий микро-сэмпл через Web Audio — это авторизует весь аудио-стек на iOS
+    if (ttsAudioCtx) {
+      var silentBuf = ttsAudioCtx.createBuffer(1, 1, 22050);
+      var src = ttsAudioCtx.createBufferSource();
+      src.buffer = silentBuf;
+      src.connect(ttsAudioCtx.destination);
+      src.start(0);
+    }
+    var el = getSharedAudioElement();
+    if (el) {
+      el.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+      var p = el.play();
+      if (p !== undefined) {
+        p.then(function() {
+          el.pause();
+          el.currentTime = 0;
+        }).catch(function() {});
+      }
+    }
+    isIosAudioUnlocked = true;
+  } catch(e) {}
+}
+
+if (typeof window !== 'undefined') {
+  ['touchstart', 'touchend', 'pointerdown', 'click'].forEach(function(evt) {
+    window.addEventListener(evt, unlockIosAudioPipeline, { once: true, passive: true });
+  });
+}
+
+function setBtnPlayingState(btn, isPlaying) {
+  if (activePlayingBtn) {
+    activePlayingBtn.classList.remove('is-playing');
+    activePlayingBtn = null;
+  }
+  if (isPlaying) {
+    if (!btn && typeof window !== 'undefined' && window.event) {
+      var t = window.event.target || window.event.srcElement;
+      if (t) btn = t.closest ? t.closest('button') : t;
+    }
+    if (!btn && typeof document !== 'undefined' && document.activeElement && document.activeElement.tagName === 'BUTTON') {
+      btn = document.activeElement;
+    }
+    if (btn && btn.classList) {
+      activePlayingBtn = btn;
+      btn.classList.add('is-playing');
+    }
   }
 }
 
-function speakGerman(text) {
+function stopCurrentSpeech() {
+  if (activeSourceNode) {
+    try { activeSourceNode.stop(); } catch(e) {}
+    activeSourceNode = null;
+  }
+  if (sharedAudioEl) {
+    try { sharedAudioEl.pause(); } catch(e) {}
+  }
+  setBtnPlayingState(null, false);
+}
+
+// Fallback через синтез речи, безопасный для iOS (без вызова cancel прямо перед speak)
+function safeFallbackSpeech(clean, btn) {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    setBtnPlayingState(btn, false);
+    return;
+  }
+  try {
+    var utter = new SpeechSynthesisUtterance(clean);
+    utter.lang = 'de-DE';
+    utter.rate = 0.94;
+    var voices = window.speechSynthesis.getVoices() || [];
+    var deVoice = voices.find(function(v) {
+      return v.lang && (v.lang === 'de-DE' || v.lang === 'de_DE');
+    }) || null;
+    if (deVoice) utter.voice = deVoice;
+    
+    setBtnPlayingState(btn, true);
+    utter.onend = function() { setBtnPlayingState(btn, false); };
+    utter.onerror = function() { setBtnPlayingState(btn, false); };
+    window.speechSynthesis.speak(utter);
+  } catch(err) {
+    console.warn('Fallback SpeechSynthesis error:', err);
+    setBtnPlayingState(btn, false);
+  }
+}
+
+function speakGerman(text, triggeringEl) {
   if (!text) return;
   var clean = text.replace(/<[^>]*>/g, '').replace(/\[[^\]]*\]/g, '').replace(/[·•\/]/g, ' ').trim();
   if (!clean) return;
 
-  try {
-    if (activeTtsAudio) {
-      activeTtsAudio.pause();
-      activeTtsAudio = null;
+  unlockIosAudioPipeline();
+  stopCurrentSpeech();
+
+  var btn = triggeringEl || null;
+  setBtnPlayingState(btn, true);
+
+  // Microsoft Neural v2 (по умолчанию новейший de-DE-FlorianMultilingualNeural)
+  var base = (window.location.pathname.indexOf('/deutsch') === 0) ? '/deutsch/api/tts' : '/api/tts';
+  var v = window.selectedTtsVoice || localStorage.getItem('dt_tts_voice') || 'de-DE-FlorianMultilingualNeural';
+  var url = base + '?text=' + encodeURIComponent(clean) + '&voice=' + encodeURIComponent(v);
+
+  // 1. МГНОВЕННЫЙ КЭШ В RAM (0 мс задержки!)
+  if (ttsAudioCtx && ttsBufferCache.has(url)) {
+    try {
+      if (ttsAudioCtx.state === 'suspended') ttsAudioCtx.resume();
+      var source = ttsAudioCtx.createBufferSource();
+      source.buffer = ttsBufferCache.get(url);
+      source.connect(ttsAudioCtx.destination);
+      activeSourceNode = source;
+      source.onended = function() {
+        if (activeSourceNode === source) {
+          activeSourceNode = null;
+          setBtnPlayingState(btn, false);
+        }
+      };
+      source.start(0);
+      return;
+    } catch(e) {
+      console.warn('RAM audio buffer playback failed:', e);
     }
-  } catch(e) {}
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    try { window.speechSynthesis.cancel(); } catch(e) {}
   }
 
-  // Google Neural German Voice (Natural native pronunciation)
+  // 2. ВОСПРОИЗВЕДЕНИЕ ЧЕРЕЗ WEB AUDIO API (Обходит Silent Switch на iPhone!)
+  var AC = window.AudioContext || window.webkitAudioContext;
+  if (AC) {
+    if (!ttsAudioCtx) ttsAudioCtx = new AC({ latencyHint: 'interactive' });
+    if (ttsAudioCtx.state === 'suspended') {
+      ttsAudioCtx.resume().catch(function() {});
+    }
+
+    fetch(url)
+      .then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.arrayBuffer();
+      })
+      .then(function(arrayBuffer) {
+        return decodeAudioCompat(ttsAudioCtx, arrayBuffer);
+      })
+      .then(function(decodedBuffer) {
+        ttsBufferCache.set(url, decodedBuffer); // Сохраняем в кэш RAM
+        var source = ttsAudioCtx.createBufferSource();
+        source.buffer = decodedBuffer;
+        source.connect(ttsAudioCtx.destination);
+        activeSourceNode = source;
+        source.onended = function() {
+          if (activeSourceNode === source) {
+            activeSourceNode = null;
+            setBtnPlayingState(btn, false);
+          }
+        };
+        source.start(0);
+      })
+      .catch(function(err) {
+        console.warn('Web Audio playback failed, using HTMLAudio fallback:', err);
+        playHtmlAudioFallback(url, clean, btn);
+      });
+  } else {
+    playHtmlAudioFallback(url, clean, btn);
+  }
+}
+
+function playHtmlAudioFallback(url, clean, btn) {
   try {
-    var url = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=de&client=tw-ob&q=' + encodeURIComponent(clean);
-    var audio = new Audio(url);
-    activeTtsAudio = audio;
-    audio.playbackRate = 0.95;
+    var audio = getSharedAudioElement();
+    audio.src = url;
+    audio.playbackRate = 0.96;
+    audio.onended = function() { setBtnPlayingState(btn, false); };
+    audio.onerror = function() { safeFallbackSpeech(clean, btn); };
     var p = audio.play();
     if (p !== undefined) {
       p.catch(function(err) {
-        fallbackSpeak(clean);
+        console.warn('HTMLAudio play rejected on iOS:', err);
+        safeFallbackSpeech(clean, btn);
       });
     }
   } catch(e) {
-    fallbackSpeak(clean);
+    safeFallbackSpeech(clean, btn);
   }
 }
 window.speakGerman = speakGerman;
+
+function changeTtsVoice(voice) {
+  window.selectedTtsVoice = voice;
+  localStorage.setItem('dt_tts_voice', voice);
+  ttsBufferCache.clear();
+}
+window.changeTtsVoice = changeTtsVoice;
+
+function changeGeminiVoice(voice) {
+  window.selectedGeminiVoice = voice;
+  localStorage.setItem('dt_gemini_voice', voice);
+}
+window.changeGeminiVoice = changeGeminiVoice;
 
 function fullDeck(){return vocabCore.concat(jobVocab[$("profession").value]||jobVocab.kitchen)}
 function refreshDeck(reset){var all=fullDeck();activeDeck=deckCategory==="all"?all.slice():all.filter(function(w){return w[5]===deckCategory});if(reset)deckIndex=0;if(deckIndex>=activeDeck.length)deckIndex=0;renderWord();renderWordList();$("deckTotal").textContent=String(all.length);if($("allCountBadge"))$("allCountBadge").textContent=String(all.length);updateLearned()}
@@ -1470,14 +2620,18 @@ function showConnectionCheck(title,detail,state){var box=$('connectionCheck');bo
 function mergeModelCandidates(found,onlyAvailable){var merged=onlyAvailable&&found&&found.length?found:preferredLiveModels.concat(found||[]),seen={};return merged.filter(function(name){var label=liveModelLabel(name);if(!label||seen[label])return false;seen[label]=true;return true}).sort(function(a,b){return liveModelScore(a)-liveModelScore(b)})}
 async function discoverLiveModels(key){var lib=sdk();if(!lib)throw new Error('Официальный Google Gen AI SDK не загрузился. Проверьте соединение и перезапустите страницу.');genaiClient=new lib.GoogleGenAI({apiKey:key,httpOptions:{apiVersion:'v1beta'}});networkDiscoveryWarning='';setStatus('Самопроверка связи с Google…','ready');showConnectionCheck('Самопроверка связи','Проверяю REST models.list. Даже если этот запрос заблокирован, тренажёр продолжит прямое Live‑подключение.','');try{var pager=await genaiClient.models.list({config:{pageSize:100}}),rows=(pager.page||[]).slice();while(pager.hasNextPage())rows=rows.concat(await pager.nextPage());var models=rows.filter(function(m){var actions=(m.supportedActions||[]).map(function(x){return String(x).toLowerCase()});var name=String(m.name||'');return /live|native-audio/i.test(name)&&(!actions.length||actions.some(function(x){return x.indexOf('bidigeneratecontent')>-1||x.indexOf('live')>-1}))}).map(function(m){return m.name}).filter(Boolean);var candidates=mergeModelCandidates(models,true);showConnectionCheck('Связь с Google работает','models.list ответил. Дальше официальный SDK напрямую откроет Gemini Live WebSocket.','ok');return candidates}catch(e){var raw=safeDetail(e&&e.message||e);if((raw.indexOf('403')>-1||raw.indexOf('leaked')>-1||raw.indexOf('PERMISSION_DENIED')>-1)&&cloudGeminiBackupKey&&key!==cloudGeminiBackupKey){console.warn('Switching to backup Gemini key');sessionCredential=cloudGeminiBackupKey;return discoverLiveModels(cloudGeminiBackupKey);}
 networkDiscoveryWarning='models.list: '+raw;showConnectionCheck('models.list недоступен — продолжаю напрямую','Сырая ошибка: '+raw+'\n\nЭто не останавливает занятие: сейчас официальный SDK попробует рабочие Live‑модели напрямую. Если и WebSocket покажет Failed to fetch / код 1006, откройте тренажёр отдельно в обычной вкладке браузера и временно отключите блокировщик для Google API.','warn');return mergeModelCandidates([],false)}}
-function liveConfig(){var lib=sdk();return{responseModalities:[lib&&lib.Modality?lib.Modality.AUDIO:'AUDIO'],speechConfig:{languageCode:'de-DE',voiceConfig:{prebuiltVoiceConfig:{voiceName:'Orus'}}},thinkingConfig:{includeThoughts:false},systemInstruction:systemPrompt(current.mode,current.job,current.level,current.p,current.coach,current.scenario),inputAudioTranscription:{},outputAudioTranscription:{}}}
-function completeLiveConnection(session,attemptModel){socket=session;connected=true;liveAttemptBusy=false;turnHadAudio=false;turnHadModelText=false;if(credentialType==='key'){sessionCredential=pendingCredential;rememberCredential()}else if(api){api.value='';}pendingCredential='';document.body.classList.add('session-active','mic-live');$('topEnd').hidden=false;$('speaker').hidden=false;$('speaker').classList.toggle('muted',!(playCtx&&playCtx.state==='running'));started=Date.now();timerId=setInterval(tick,1000);setStatus('Занятие идёт · '+liveModelLabel(attemptModel),'live');micstate.textContent=playCtx&&playCtx.state==='running'?'Микрофон и звук включены':'Микрофон включён · нажмите динамик для звука';presence('thinking');var startPrompt='Beginne jetzt mit der ersten kurzen Frage auf Deutsch. Sprich, schreibe nicht auf Englisch.';
+function liveConfig(){var lib=sdk();return{responseModalities:[lib&&lib.Modality?lib.Modality.AUDIO:'AUDIO'],speechConfig:{languageCode:'de-DE',voiceConfig:{prebuiltVoiceConfig:{voiceName:(window.selectedGeminiVoice||localStorage.getItem('dt_gemini_voice')||'Fenrir')}}},thinkingConfig:{includeThoughts:false},systemInstruction:systemPrompt(current.mode,current.job,current.level,current.p,current.coach,current.scenario),inputAudioTranscription:{},outputAudioTranscription:{}}}
+function completeLiveConnection(session,attemptModel){socket=session;connected=true;liveAttemptBusy=false;turnHadAudio=false;turnHadModelText=false;if(credentialType==='key'){sessionCredential=pendingCredential;rememberCredential()}else if(api){api.value='';}pendingCredential='';document.body.classList.add('session-active','mic-live');$('topEnd').hidden=false;$('speaker').hidden=false;$('speaker').classList.toggle('muted',!(playCtx&&playCtx.state==='running'));started=Date.now();timerId=setInterval(tick,1000);setStatus('Занятие идёт · '+liveModelLabel(attemptModel),'live');micstate.textContent=playCtx&&playCtx.state==='running'?'Микрофон и звук включены':'Микрофон включён · нажмите динамик для звука';presence('thinking');var startPrompt='Beginne jetzt mit der ersten kurzen Frage auf Deutsch. Sprich, schreibe nicht auf Englisch. WICHTIG: Das ist ein langes, gründliches Training mit mindestens 15 bis 20 Runden. Beende das Gespräch NIEMALS vorzeitig von dir aus!';
 if(current.level==='A1'){
-  startPrompt='Beginne das Gespräch freundlich auf Russisch: Begrüße mich kurz und warm (z.B. „Привет! Я твой голосовой репетитор, давай начнём заниматься без спешки.“), erkläre kurz auf Russisch, dass wir einfache Sätze üben werden, und stelle dann die erste sehr einfache Frage auf Deutsch mit deutscher und russischer Erklärung.';
+  startPrompt='Beginne das Gespräch freundlich auf Russisch: Begrüße mich kurz und warm (z.B. „Привет! Я твой голосовой репетитор, давай начнём заниматься без спешки.“), erkläre kurz auf Russisch, dass wir einfache Sätze üben werden und unser Training lange und gründlich sein wird. Stelle dann deine erste sehr einfache Frage auf Deutsch an mich (z.B. „Wie heißen Sie?“), erkläre die Frage auf Russisch und gib mir die Schablone zum Antworten („Ответьте: Ich heiße...“). WICHTIG: Beende das Gespräch niemals vorzeitig!';
 }else if(current.level==='B1'){
-  startPrompt='Beginne jetzt direkt auf Deutsch (Niveau B1) mit einer professionellen ersten Frage zum gewählten Szenario. Sprich, schreibe nicht auf Englisch.';
+  startPrompt='Beginne jetzt direkt auf Deutsch (Niveau B1) mit einer professionellen ersten Frage zum gewählten Szenario. Sprich, schreibe nicht auf Englisch. WICHTIG: Das ist ein langes Training mit mindestens 15 Runden, beende das Gespräch niemals vorzeitig!';
 }else{
-  startPrompt='Guten Tag! Beginne jetzt mit einer kurzen, freundlichen Begrüßung und der ersten Frage auf Deutsch (Niveau A2). Sprich, schreibe nicht auf Englisch.';
+  startPrompt='Guten Tag! Beginne jetzt mit einer kurzen, freundlichen Begrüßung und der ersten Frage auf Deutsch (Niveau A2). Sprich, schreibe nicht auf Englisch. WICHTIG: Das ist ein langes Training mit mindestens 15 Runden, beende das Gespräch niemals vorzeitig!';
+}
+if (window.activeQaQuestionFocus) {
+  startPrompt += ' Wir üben heute gezielt diese Frage aus dem Vorstellungsgespräch: "' + window.activeQaQuestionFocus + '". Stelle mir genau diese Frage als Erste und beurteile meine Antwort mit sanfter Korrektur auf Deutsch und Russisch.';
+  window.activeQaQuestionFocus = null;
 }
 socket.sendClientContent({turns:[{role:'user',parts:[{text:startPrompt}]}],turnComplete:true})}
 function retryLiveModel(reason){if(connected||liveAttemptBusy)return;liveAttemptBusy=true;clearSetupTimer();connectAttemptId++;if(activeLiveModel)liveAttemptErrors.push(liveModelLabel(activeLiveModel)+' — '+safeDetail(reason));if(socket){try{socket.close()}catch(e){}socket=null}if(liveCandidateIndex>=liveCandidates.length){var report=liveAttemptErrors.length?'\n\nСырые ответы Live:\n• '+liveAttemptErrors.join('\n• '):'',probe=networkDiscoveryWarning?'\n\nСамопроверка REST:\n• '+networkDiscoveryWarning:'';failConnection('Прямое подключение Gemini Live не удалось.'+report+probe+'\n\nЕсли видите Failed to fetch или код 1006, запросы к googleapis.com блокирует окружение, сеть или расширение браузера. Откройте тренажёр отдельно в обычной вкладке браузера, разрешите микрофон и временно отключите блокировщик для Google API. Если Google отвечает 401/403, проверьте ключ и доступ Generative Language API.');return}setTimeout(connectNextLiveModel,180)}
@@ -1726,7 +2880,10 @@ function systemPrompt(mode, job, level, p, coach, scenario) {
   return base;
 }
 
-function startDirectLesson(mode, scenario) {
+function startDirectLesson(mode, scenario, focusQuestion) {
+  if (focusQuestion) {
+    window.activeQaQuestionFocus = focusQuestion;
+  }
   var input = document.querySelector('input[name="mode"][value="' + mode + '"]');
   if (input) {
     input.checked = true;
@@ -1739,6 +2896,22 @@ function startDirectLesson(mode, scenario) {
   setView('training');
 }
 window.startDirectLesson = startDirectLesson;
+
+function filterQaCategory(cat) {
+  var cards = document.querySelectorAll('.qa-card');
+  var chips = document.querySelectorAll('.qa-filter-chip');
+  chips.forEach(function(c) {
+    c.classList.toggle('active', c.dataset.qaFilter === cat);
+  });
+  cards.forEach(function(card) {
+    if (cat === 'all' || card.dataset.qaCategory === cat) {
+      card.style.display = 'block';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+window.filterQaCategory = filterQaCategory;
 
 function b64(buf){var a=new Uint8Array(buf),s='',n=32768;for(var i=0;i<a.length;i+=n)s+=String.fromCharCode.apply(null,a.subarray(i,Math.min(i+n,a.length)));return btoa(s)}
 function pcm(input,rate){var r=rate/16000,len=Math.round(input.length/r),out=new Int16Array(len),off=0;for(var i=0;i<len;i++){var next=Math.round((i+1)*r),sum=0,c=0;for(;off<next&&off<input.length;off++){sum+=input[off];c++}var v=c?sum/c:0;v=Math.max(-1,Math.min(1,v));out[i]=v<0?v*32768:v*32767}return out.buffer}
@@ -1956,6 +3129,48 @@ function updateAuthGate(user) {
     </div>
 
     
+    <!-- Блок выбора реалистичного голоса (Microsoft Neural v2 & Gemini Live) -->
+    <div style="margin-top:20px;background:rgba(15,26,42,0.8);border:1px solid rgba(56,189,248,0.3);border-radius:20px;padding:18px 20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">🎙️</span>
+          <div>
+            <b style="font-size:14px;color:#f8fafc;">Голосовой движок (Microsoft Neural v2)</b>
+            <p style="font-size:11px;color:#94a3b8;margin:2px 0 0 0;">Студийная немецкая дикция · Работает на iPhone без сбоев</p>
+          </div>
+        </div>
+        <span style="font-size:10px;color:#38bdf8;font-weight:700;background:rgba(56,189,248,0.14);padding:3px 8px;border-radius:6px;border:1px solid rgba(56,189,248,0.35);">iOS Ready</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <label style="font-size:12px;color:#cbd5e1;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.35);padding:10px 12px;border-radius:12px;cursor:pointer;border:1px solid rgba(255,255,255,0.06);">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="radio" name="ttsVoiceOption" value="de-DE-FlorianMultilingualNeural" onchange="changeTtsVoice(this.value)" checked style="accent-color:#38bdf8;">
+            <span><b>Florian (Мужской)</b> · живой естественный тембр</span>
+          </div>
+          <button type="button" onclick="speakGerman('Guten Tag! Ich freue mich auf das Vorstellungsgespräch.')" class="row-speak-btn" style="width:28px;height:28px;font-size:13px;" title="Слушать образец">🔊</button>
+        </label>
+
+        <label style="font-size:12px;color:#cbd5e1;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.35);padding:10px 12px;border-radius:12px;cursor:pointer;border:1px solid rgba(255,255,255,0.06);">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="radio" name="ttsVoiceOption" value="de-DE-SeraphinaMultilingualNeural" onchange="changeTtsVoice(this.value)" style="accent-color:#38bdf8;">
+            <span><b>Seraphina (Женский)</b> · ясный и выразительный</span>
+          </div>
+          <button type="button" onclick="speakGerman('Guten Tag! Ich freue mich auf das Vorstellungsgespräch.')" class="row-speak-btn" style="width:28px;height:28px;font-size:13px;" title="Слушать образец">🔊</button>
+        </label>
+      </div>
+
+      <div style="margin-top:12px;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:11px;color:#94a3b8;">Голос репетитора в диалоге:</span>
+        <select id="geminiLiveVoiceSelect" onchange="changeGeminiVoice(this.value)" style="background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.15);color:#f8fafc;font-size:12px;padding:4px 8px;border-radius:8px;outline:none;">
+          <option value="Fenrir" selected>Fenrir (Мужской · наставник)</option>
+          <option value="Puck">Puck (Мужской · бодрый)</option>
+          <option value="Aoede">Aoede (Женский · спокойный)</option>
+          <option value="Kore">Kore (Женский · мягкий)</option>
+        </select>
+      </div>
+    </div>
+
     <!-- Блок персонального ключа Google AI в Личном Кабинете -->
     <div style="margin-top:20px;background:rgba(15,26,42,0.8);border:1px solid rgba(245,158,11,0.25);border-radius:20px;padding:18px 20px;">
       <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleCabinetApiKeyBox()">
@@ -2519,6 +3734,14 @@ function saveUserCustomKey() {
 
 // Автоподгрузка сохраненного личного ключа
 window.addEventListener('load', () => {
+  const savedTts = localStorage.getItem('dt_tts_voice') || 'de-DE-FlorianMultilingualNeural';
+  const radio = document.querySelector('input[name="ttsVoiceOption"][value="' + savedTts + '"]');
+  if (radio) radio.checked = true;
+  
+  const savedGemini = localStorage.getItem('dt_gemini_voice') || 'Fenrir';
+  const sel = document.getElementById('geminiLiveVoiceSelect');
+  if (sel) sel.value = savedGemini;
+
   const saved = localStorage.getItem('dt_user_gemini_key') || '';
   const input = document.getElementById('userCustomGeminiKey');
   if (input) input.value = saved;
