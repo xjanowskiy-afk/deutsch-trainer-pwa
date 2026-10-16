@@ -161,7 +161,7 @@ body,button,input,select,textarea{font-family:"Manrope","IBM Plex Sans",system-u
  body[data-view="games"] .games-intro{flex:1 1 auto;height:auto;max-height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;grid-template-columns:1fr 1fr;grid-template-rows:none;gap:8px;padding-bottom:14px;align-content:start}
  body[data-view="games"] .game-card{display:grid;grid-template-columns:27px 1fr;place-content:center;justify-items:start;align-items:center;text-align:left;padding:9px 10px;border-radius:14px;min-height:0;column-gap:9px}
  body[data-view="games"] .game-card .game-num{width:27px;height:27px;border-radius:9px}body[data-view="games"] .game-card h3{font-size:11px;line-height:1.18;margin:0}body[data-view="games"] .game-card p{display:none}
- body[data-view="games"] .game-stage{height:calc(100% - 54px);max-height:calc(100% - 54px);overflow:hidden!important}body[data-view="games"] .game-stage #gameBody{overflow:hidden!important;display:flex;flex-direction:column;min-height:0}
+ body[data-view="games"] .game-stage{height:calc(100% - 54px);max-height:calc(100% - 54px);overflow:hidden!important}body[data-view="games"] .game-stage #gameBody{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;display:flex;flex-direction:column;min-height:0;touch-action:pan-y}
  body[data-view="games"] .game-prompt{font-size:22px;line-height:1.08}body[data-view="games"] .game-feedback{flex:0 0 auto}body[data-view="games"] .pair-grid{grid-template-columns:1fr 1fr;gap:5px}body[data-view="games"] .pair-btn{min-height:35px;padding:7px 8px;font-size:10px}body[data-view="games"] .token-bank,body[data-view="games"] .sentence-build{min-height:45px;padding:8px;gap:5px}body[data-view="games"] .token-btn{min-height:36px;padding:7px 9px;font-size:10px}
  body[data-view="training"] .hero>.card,body[data-view="settings"] .hero>.card{overflow:hidden!important;display:flex;flex-direction:column}#setupForm{position:relative}#setupForm h2,#setupForm>.sub,#setupForm .setup-wizard{flex:0 0 auto}#setupForm fieldset{margin-bottom:8px}#setupForm .step-caption{font-size:10px;line-height:1.3;margin:-7px 0 8px}
  #setupForm[data-setup-step="1"] .mode-grid{grid-template-columns:1fr 1fr;gap:5px}#setupForm[data-setup-step="1"] .choice label,#setupForm[data-setup-step="1"] .choice[data-scene="interview"] label{grid-template-columns:34px 1fr;min-height:56px;padding:6px 29px 6px 7px;gap:7px}#setupForm[data-setup-step="1"] .choice:last-child{grid-column:1/-1}#setupForm[data-setup-step="1"] .ico,#setupForm[data-setup-step="1"] .mode-thumb{width:34px;height:34px;border-radius:9px}#setupForm[data-setup-step="1"] .choice strong{font-size:10px;line-height:1.2}#setupForm[data-setup-step="1"] .choice small{display:none}
@@ -3077,6 +3077,612 @@ function rateWord(rating){if(!activeDeck.length)return;var w=activeDeck[deckInde
 function gameHeader(title,total){gameTotal=total;$("gameTitle").textContent=title;$("gameScore").textContent="Задание "+Math.min(gameRound+1,total)+" / "+total+" · "+gamePoints+" баллов";$("gameProgress").style.width=Math.round(gameRound/total*100)+"%";$("gameNext").classList.remove("show");gameLocked=false}
 
 
+// === WEBAUDIO SOUND FX SYSTEM ===
+function playTone(freq, type, duration, delay, gainVal) {
+  try {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!window.gameAudioCtx) window.gameAudioCtx = new AC();
+    var ctx = window.gameAudioCtx;
+    if (ctx.state === 'suspended') ctx.resume().catch(function(){});
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = type || 'sine';
+    var startT = ctx.currentTime + (delay || 0);
+    osc.frequency.setValueAtTime(freq, startT);
+    var g = gainVal !== undefined ? gainVal : 0.08;
+    gain.gain.setValueAtTime(g, startT);
+    gain.gain.exponentialRampToValueAtTime(0.001, startT + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(startT);
+    osc.stop(startT + duration);
+  } catch(e) {}
+}
+
+function playGameSound(type) {
+  try {
+    if (type === 'correct') {
+      playTone(523.25, 'sine', 0.12, 0, 0.12);
+      playTone(659.25, 'sine', 0.16, 0.08, 0.14);
+      playTone(783.99, 'sine', 0.22, 0.16, 0.16);
+    } else if (type === 'wrong') {
+      playTone(220, 'triangle', 0.12, 0, 0.15);
+      playTone(185, 'triangle', 0.18, 0.08, 0.15);
+    } else if (type === 'victory') {
+      [523.25, 659.25, 783.99, 1046.5].forEach(function(f, i) {
+        playTone(f, 'sine', 0.35, i * 0.09, 0.15);
+      });
+    } else if (type === 'click') {
+      playTone(800, 'sine', 0.04, 0, 0.05);
+    }
+  } catch(e) {}
+}
+
+// === CONFETTI ENGINE ===
+function fireGameConfetti() {
+  var canvas = document.getElementById('gameConfetti');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.display = 'block';
+
+  var particles = [];
+  var colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#eab308'];
+  for (var i = 0; i < 90; i++) {
+    particles.push({
+      x: canvas.width / 2 + (Math.random() - 0.5) * 200,
+      y: canvas.height * 0.45 + (Math.random() - 0.5) * 100,
+      vx: (Math.random() - 0.5) * 16,
+      vy: (Math.random() - 1.5) * 14,
+      size: Math.random() * 8 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      tilt: Math.random() * 10,
+      tiltSpeed: Math.random() * 0.1 + 0.05,
+      gravity: 0.38,
+      alpha: 1
+    });
+  }
+
+  var start = performance.now();
+  function renderFrame(now) {
+    var elapsed = now - start;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var alive = false;
+    particles.forEach(function(p) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.gravity;
+      p.tilt += p.tiltSpeed;
+      if (elapsed > 1400) p.alpha -= 0.025;
+      if (p.alpha > 0 && p.y < canvas.height + 20) {
+        alive = true;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.ellipse(p.x, p.y, p.size, p.size * Math.cos(p.tilt), p.tilt, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    });
+
+    if (alive && elapsed < 3200) {
+      requestAnimationFrame(renderFrame);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      canvas.style.display = 'none';
+    }
+  }
+  requestAnimationFrame(renderFrame);
+}
+
+// === COMBO STREAK SYSTEM ===
+var gameCombo = 0;
+var maxGameCombo = 0;
+function updateCombo(isCorrect) {
+  var badge = document.getElementById('gameComboBadge');
+  if (isCorrect) {
+    gameCombo++;
+    if (gameCombo > maxGameCombo) maxGameCombo = gameCombo;
+    if (badge && gameCombo >= 2) {
+      badge.style.display = 'inline-flex';
+      badge.textContent = '🔥 ' + gameCombo + 'x комбо!';
+    }
+  } else {
+    gameCombo = 0;
+    if (badge) badge.style.display = 'none';
+  }
+}
+
+// === MISTAKES BANK SYSTEM ===
+function getMistakesBank() {
+  try {
+    return JSON.parse(localStorage.getItem('dt_mistakes_bank') || '[]');
+  } catch(e) {
+    return [];
+  }
+}
+function addMistakeToBank(item) {
+  try {
+    var bank = getMistakesBank();
+    var exists = bank.some(function(x) { return x.de === item.de; });
+    if (!exists) {
+      bank.unshift({
+        id: item.id || ('m_' + Date.now()),
+        de: item.de,
+        ru: item.ru,
+        art: item.art || '',
+        hint: item.hint || '',
+        date: Date.now()
+      });
+      if (bank.length > 50) bank.pop();
+      localStorage.setItem('dt_mistakes_bank', JSON.stringify(bank));
+    }
+  } catch(e) {}
+}
+function removeMistakeFromBank(key) {
+  try {
+    var bank = getMistakesBank().filter(function(x) { return x.de !== key && x.id !== key; });
+    localStorage.setItem('dt_mistakes_bank', JSON.stringify(bank));
+  } catch(e) {}
+}
+
+// === ARTICLE MNEMONIC HELPER ===
+function getArticleMnemonic(art, noun) {
+  var n = noun.toLowerCase();
+  if (n.endsWith('ung') || n.endsWith('heit') || n.endsWith('keit') || n.endsWith('schaft') || n.endsWith('tion') || n.endsWith('tät') || n.endsWith('ie') || n.endsWith('ik') || n.endsWith('ur')) {
+    return 'Правило: суффиксы -ung, -heit, -keit, -schaft, -tion всегда женского рода DIE!';
+  }
+  if (n.endsWith('er') || n.endsWith('ling') || n.endsWith('or') || n.endsWith('ist') || n.endsWith('ismus')) {
+    return 'Правило: деятели и суффиксы -er, -or, -ist мужского рода DER!';
+  }
+  if (n.endsWith('chen') || n.endsWith('lein') || n.endsWith('ment') || n.endsWith('tum') || n.startsWith('ge')) {
+    return 'Правило: уменьшительные -chen, -lein и собирательные Ge-... среднего рода DAS!';
+  }
+  return 'Запомните род в контексте: ' + art.toUpperCase() + ' ' + noun;
+}
+
+// === BOSS SCENARIOS ===
+var bossShiftScenarios = [
+  {
+    role: "👷 Meister (Склад)",
+    text: "Herr Müller, die Palette mit den Ersatzteilen steht mitten im Gang. Wohin gehört sie?",
+    correct: "Sie gehört ins Hochregal 4, ich fahre sie sofort dorthin.",
+    options: [
+      "Sie gehört ins Hochregal 4, ich fahre sie sofort dorthin.",
+      "Ich weiß nicht, wo der Gang ist.",
+      "Die Palette ist sehr schwer und gelb."
+    ],
+    feedback: "Отлично! Чёткий ответ с предлогом направления (in das Hochregal) и действием."
+  },
+  {
+    role: "🏭 Schichtleiter (Завод / Производство)",
+    text: "Achtung! Maschine 3 macht ein seltsames Geräusch. Was machen wir zuerst?",
+    correct: "Wir drücken den Not-Aus-Schalter und informieren den Techniker.",
+    options: [
+      "Wir drücken den Not-Aus-Schalter und informieren den Techniker.",
+      "Wir arbeiten einfach schneller weiter.",
+      "Ich mache morgen Feierabend."
+    ],
+    feedback: "Правильно! Техника безопасности: Not-Aus-Schalter (аварийная остановка)."
+  },
+  {
+    role: "🦺 Vorarbeiter (Стройка / Монтаж)",
+    text: "Haben Sie Ihre persönliche Schutzausrüstung dabei? Wo sind die Sicherheitsschuhe?",
+    correct: "Ja, ich trage die Sicherheitsschuhe und den Helm bereits.",
+    options: [
+      "Ja, ich trage die Sicherheitsschuhe und den Helm bereits.",
+      "Ich habe keine Schuhe zu Hause.",
+      "Der Helm ist zu klein für das Werkzeug."
+    ],
+    feedback: "Идеально! Глагол tragen (носить одежду) и винительный падеж (den Helm)."
+  },
+  {
+    role: "👨‍🍳 Küchenchef (Кухня / Гастрономия)",
+    text: "Die Bestellung für Tisch 5 muss in 10 Minuten fertig sein. Schaffen Sie das?",
+    correct: "Ja, Chef! Die Beilagen sind fast fertig, ich richte sofort an.",
+    options: [
+      "Ja, Chef! Die Beilagen sind fast fertig, ich richte sofort an.",
+      "Tisch 5 gefällt mir nicht.",
+      "Ich trinke jetzt einen Kaffee."
+    ],
+    feedback: "Richtig! Профессиональный тон и разделяемый глагол anrichten (сервировать)."
+  },
+  {
+    role: "📦 Logistikleiter (Логистика / Приёмка)",
+    text: "Der Lieferschein stimmt nicht mit der gelieferten Menge überein. Was tun Sie?",
+    correct: "Ich vermerke die Differenz auf dem Lieferschein und mache ein Foto.",
+    options: [
+      "Ich vermerke die Differenz auf dem Lieferschein und mache ein Foto.",
+      "Ich unterschreibe alles ohne Prüfung.",
+      "Die Ware ist im Karton versteckt."
+    ],
+    feedback: "Супер! Фиксация расхождений (Differenz vermerken) — стандарт работы в DACH."
+  },
+  {
+    role: "🏥 Stationsleitung (Клиника / Уход)",
+    text: "Frau Weber klagt über Schwindel. Haben Sie ihren Blutdruck schon gemessen?",
+    correct: "Ja, der Blutdruck ist 140 zu 90. Ich habe es in der Akte notiert.",
+    options: [
+      "Ja, der Blutdruck ist 140 zu 90. Ich habe es in der Akte notiert.",
+      "Schwindel ist eine schöne Stadt.",
+      "Nein, ich gehe jetzt nach Hause."
+    ],
+    feedback: "Отлично! Точный медицинский ответ и фиксация в карте (in der Akte notiert)."
+  },
+  {
+    role: "🧹 Teamleiter (Клининг / Уборка)",
+    text: "Der Boden im Flur ist noch nass. Haben Sie das Warnschild aufgestellt?",
+    correct: "Ja, das gelbe Warnschild «Rutschgefahr» steht am Eingang.",
+    options: [
+      "Ja, das gelbe Warnschild «Rutschgefahr» steht am Eingang.",
+      "Der Boden kann selbst trocknen.",
+      "Ich habe das Wasser getrunken."
+    ],
+    feedback: "Правильно! Безопасность: Schild «Rutschgefahr» (Осторожно, скользко)."
+  },
+  {
+    role: "🏢 Büroleiter (Офис / Администрация)",
+    text: "Können Sie den Kunden zurückrufen und einen Termin für morgen vereinbaren?",
+    correct: "Sehr gerne, ich rufe ihn gleich an und bestätige den Termin per E-Mail.",
+    options: [
+      "Sehr gerne, ich rufe ihn gleich an und bestätige den Termin per E-Mail.",
+      "Ich habe kein Telefon und keine Lust.",
+      "Der Termin war gestern schon vorbei."
+    ],
+    feedback: "Идеально! Вежливый деловой оборот (Sehr gerne) и глагол anrufen."
+  },
+  {
+    role: "🔧 Werkstattmeister (Автосервис / Механика)",
+    text: "Die Bremsen an diesem Fahrzeug müssen gewechselt werden. Haben wir die Teile da?",
+    correct: "Ja, die neuen Bremsbeläge liegen schon auf der Werkbank.",
+    options: [
+      "Ja, die neuen Bremsbeläge liegen schon auf der Werkbank.",
+      "Das Auto braucht keine Bremsen.",
+      "Ich fahre mit dem Auto in den Urlaub."
+    ],
+    feedback: "Richtig! Dativ с предлогом auf (auf der Werkbank) и техническая лексика."
+  },
+  {
+    role: "⚡ Obermonteur (Электромонтаж)",
+    text: "Ist die Leitung spannungsfrei geschaltet? Haben Sie nachgemessen?",
+    correct: "Ja, ich habe mit dem Duspol geprüft. Es liegt keine Spannung an.",
+    options: [
+      "Ja, ich habe mit dem Duspol geprüft. Es liegt keine Spannung an.",
+      "Strom kann man mit den Fingern fühlen.",
+      "Die Lampe leuchtet sehr hell."
+    ],
+    feedback: "Отлично! 5 правил электробезопасности: spannungsfrei schalten и прибор Duspol."
+  },
+  {
+    role: "🛒 Filialleiter (Супермаркет / Ритейл)",
+    text: "Das Kühlregal für Milchprodukte ist fast leer. Füllen Sie bitte nach!",
+    correct: "Selbstverständlich, ich hole die neue Ware sofort aus dem Kühlraum.",
+    options: [
+      "Selbstverständlich, ich hole die neue Ware sofort aus dem Kühlraum.",
+      "Die Kunden brauchen keine Milch.",
+      "Das Regal ist viel zu kalt."
+    ],
+    feedback: "Супер! nachfüllen (пополнять) и Kühlraum (холодильная камера)."
+  },
+  {
+    role: "🌳 Vorarbeiter (Садоводство / Ландшафт)",
+    text: "Die Hecke muss vor dem Regen geschnitten werden. Ist die Heckenschere bereit?",
+    correct: "Ja, der Akku ist voll geladen und die Klingen sind geölt.",
+    options: [
+      "Ja, der Akku ist voll geladen und die Klingen sind geölt.",
+      "Die Hecke wächst im Winter nicht.",
+      "Regen ist gut für meine Schuhe."
+    ],
+    feedback: "Превосходно! Пассивное состояние (voll geladen, geölt) и рабочий контекст."
+  }
+];
+
+// === WEBAUDIO SOUND FX SYSTEM ===
+function playTone(freq, type, duration, delay, gainVal) {
+  try {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!window.gameAudioCtx) window.gameAudioCtx = new AC();
+    var ctx = window.gameAudioCtx;
+    if (ctx.state === 'suspended') ctx.resume().catch(function(){});
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = type || 'sine';
+    var startT = ctx.currentTime + (delay || 0);
+    osc.frequency.setValueAtTime(freq, startT);
+    var g = gainVal !== undefined ? gainVal : 0.08;
+    gain.gain.setValueAtTime(g, startT);
+    gain.gain.exponentialRampToValueAtTime(0.001, startT + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(startT);
+    osc.stop(startT + duration);
+  } catch(e) {}
+}
+
+function playGameSound(type) {
+  try {
+    if (type === 'correct') {
+      playTone(523.25, 'sine', 0.12, 0, 0.12);
+      playTone(659.25, 'sine', 0.16, 0.08, 0.14);
+      playTone(783.99, 'sine', 0.22, 0.16, 0.16);
+    } else if (type === 'wrong') {
+      playTone(220, 'triangle', 0.12, 0, 0.15);
+      playTone(185, 'triangle', 0.18, 0.08, 0.15);
+    } else if (type === 'victory') {
+      [523.25, 659.25, 783.99, 1046.5].forEach(function(f, i) {
+        playTone(f, 'sine', 0.35, i * 0.09, 0.15);
+      });
+    } else if (type === 'click') {
+      playTone(800, 'sine', 0.04, 0, 0.05);
+    }
+  } catch(e) {}
+}
+
+// === CONFETTI ENGINE ===
+function fireGameConfetti() {
+  var canvas = document.getElementById('gameConfetti');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.display = 'block';
+
+  var particles = [];
+  var colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#eab308'];
+  for (var i = 0; i < 90; i++) {
+    particles.push({
+      x: canvas.width / 2 + (Math.random() - 0.5) * 200,
+      y: canvas.height * 0.45 + (Math.random() - 0.5) * 100,
+      vx: (Math.random() - 0.5) * 16,
+      vy: (Math.random() - 1.5) * 14,
+      size: Math.random() * 8 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      tilt: Math.random() * 10,
+      tiltSpeed: Math.random() * 0.1 + 0.05,
+      gravity: 0.38,
+      alpha: 1
+    });
+  }
+
+  var start = performance.now();
+  function renderFrame(now) {
+    var elapsed = now - start;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var alive = false;
+    particles.forEach(function(p) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.gravity;
+      p.tilt += p.tiltSpeed;
+      if (elapsed > 1400) p.alpha -= 0.025;
+      if (p.alpha > 0 && p.y < canvas.height + 20) {
+        alive = true;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.ellipse(p.x, p.y, p.size, p.size * Math.cos(p.tilt), p.tilt, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    });
+
+    if (alive && elapsed < 3200) {
+      requestAnimationFrame(renderFrame);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      canvas.style.display = 'none';
+    }
+  }
+  requestAnimationFrame(renderFrame);
+}
+
+// === COMBO STREAK SYSTEM ===
+var gameCombo = 0;
+var maxGameCombo = 0;
+function updateCombo(isCorrect) {
+  var badge = document.getElementById('gameComboBadge');
+  if (isCorrect) {
+    gameCombo++;
+    if (gameCombo > maxGameCombo) maxGameCombo = gameCombo;
+    if (badge && gameCombo >= 2) {
+      badge.style.display = 'inline-flex';
+      badge.textContent = '🔥 ' + gameCombo + 'x комбо!';
+    }
+  } else {
+    gameCombo = 0;
+    if (badge) badge.style.display = 'none';
+  }
+}
+
+// === MISTAKES BANK SYSTEM ===
+function getMistakesBank() {
+  try {
+    return JSON.parse(localStorage.getItem('dt_mistakes_bank') || '[]');
+  } catch(e) {
+    return [];
+  }
+}
+function addMistakeToBank(item) {
+  try {
+    var bank = getMistakesBank();
+    var exists = bank.some(function(x) { return x.de === item.de; });
+    if (!exists) {
+      bank.unshift({
+        id: item.id || ('m_' + Date.now()),
+        de: item.de,
+        ru: item.ru,
+        art: item.art || '',
+        hint: item.hint || '',
+        date: Date.now()
+      });
+      if (bank.length > 50) bank.pop();
+      localStorage.setItem('dt_mistakes_bank', JSON.stringify(bank));
+    }
+  } catch(e) {}
+}
+function removeMistakeFromBank(key) {
+  try {
+    var bank = getMistakesBank().filter(function(x) { return x.de !== key && x.id !== key; });
+    localStorage.setItem('dt_mistakes_bank', JSON.stringify(bank));
+  } catch(e) {}
+}
+
+// === ARTICLE MNEMONIC HELPER ===
+function getArticleMnemonic(art, noun) {
+  var n = noun.toLowerCase();
+  if (n.endsWith('ung') || n.endsWith('heit') || n.endsWith('keit') || n.endsWith('schaft') || n.endsWith('tion') || n.endsWith('tät') || n.endsWith('ie') || n.endsWith('ik') || n.endsWith('ur')) {
+    return 'Правило: суффиксы -ung, -heit, -keit, -schaft, -tion всегда женского рода DIE!';
+  }
+  if (n.endsWith('er') || n.endsWith('ling') || n.endsWith('or') || n.endsWith('ist') || n.endsWith('ismus')) {
+    return 'Правило: деятели и суффиксы -er, -or, -ist мужского рода DER!';
+  }
+  if (n.endsWith('chen') || n.endsWith('lein') || n.endsWith('ment') || n.endsWith('tum') || n.startsWith('ge')) {
+    return 'Правило: уменьшительные -chen, -lein и собирательные Ge-... среднего рода DAS!';
+  }
+  return 'Запомните род в контексте: ' + art.toUpperCase() + ' ' + noun;
+}
+
+// === BOSS SCENARIOS ===
+var bossShiftScenarios = [
+  {
+    role: "👷 Meister (Склад)",
+    text: "Herr Müller, die Palette mit den Ersatzteilen steht mitten im Gang. Wohin gehört sie?",
+    correct: "Sie gehört ins Hochregal 4, ich fahre sie sofort dorthin.",
+    options: [
+      "Sie gehört ins Hochregal 4, ich fahre sie sofort dorthin.",
+      "Ich weiß nicht, wo der Gang ist.",
+      "Die Palette ist sehr schwer und gelb."
+    ],
+    feedback: "Отлично! Чёткий ответ с предлогом направления (in das Hochregal) и действием."
+  },
+  {
+    role: "🏭 Schichtleiter (Завод / Производство)",
+    text: "Achtung! Maschine 3 macht ein seltsames Geräusch. Was machen wir zuerst?",
+    correct: "Wir drücken den Not-Aus-Schalter und informieren den Techniker.",
+    options: [
+      "Wir drücken den Not-Aus-Schalter und informieren den Techniker.",
+      "Wir arbeiten einfach schneller weiter.",
+      "Ich mache morgen Feierabend."
+    ],
+    feedback: "Правильно! Техника безопасности: Not-Aus-Schalter (аварийная остановка)."
+  },
+  {
+    role: "🦺 Vorarbeiter (Стройка / Монтаж)",
+    text: "Haben Sie Ihre persönliche Schutzausrüstung dabei? Wo sind die Sicherheitsschuhe?",
+    correct: "Ja, ich trage die Sicherheitsschuhe und den Helm bereits.",
+    options: [
+      "Ja, ich trage die Sicherheitsschuhe und den Helm bereits.",
+      "Ich habe keine Schuhe zu Hause.",
+      "Der Helm ist zu klein für das Werkzeug."
+    ],
+    feedback: "Идеально! Глагол tragen (носить одежду) и винительный падеж (den Helm)."
+  },
+  {
+    role: "👨‍🍳 Küchenchef (Кухня / Гастрономия)",
+    text: "Die Bestellung für Tisch 5 muss in 10 Minuten fertig sein. Schaffen Sie das?",
+    correct: "Ja, Chef! Die Beilagen sind fast fertig, ich richte sofort an.",
+    options: [
+      "Ja, Chef! Die Beilagen sind fast fertig, ich richte sofort an.",
+      "Tisch 5 gefällt mir nicht.",
+      "Ich trinke jetzt einen Kaffee."
+    ],
+    feedback: "Richtig! Профессиональный тон и разделяемый глагол anrichten (сервировать)."
+  },
+  {
+    role: "📦 Logistikleiter (Логистика / Приёмка)",
+    text: "Der Lieferschein stimmt nicht mit der gelieferten Menge überein. Was tun Sie?",
+    correct: "Ich vermerke die Differenz auf dem Lieferschein und mache ein Foto.",
+    options: [
+      "Ich vermerke die Differenz auf dem Lieferschein und mache ein Foto.",
+      "Ich unterschreibe alles ohne Prüfung.",
+      "Die Ware ist im Karton versteckt."
+    ],
+    feedback: "Супер! Фиксация расхождений (Differenz vermerken) — стандарт работы в DACH."
+  },
+  {
+    role: "🏥 Stationsleitung (Клиника / Уход)",
+    text: "Frau Weber klagt über Schwindel. Haben Sie ihren Blutdruck schon gemessen?",
+    correct: "Ja, der Blutdruck ist 140 zu 90. Ich habe es in der Akte notiert.",
+    options: [
+      "Ja, der Blutdruck ist 140 zu 90. Ich habe es in der Akte notiert.",
+      "Schwindel ist eine schöne Stadt.",
+      "Nein, ich gehe jetzt nach Hause."
+    ],
+    feedback: "Отлично! Точный медицинский ответ и фиксация в карте (in der Akte notiert)."
+  },
+  {
+    role: "🧹 Teamleiter (Клининг / Уборка)",
+    text: "Der Boden im Flur ist noch nass. Haben Sie das Warnschild aufgestellt?",
+    correct: "Ja, das gelbe Warnschild «Rutschgefahr» steht am Eingang.",
+    options: [
+      "Ja, das gelbe Warnschild «Rutschgefahr» steht am Eingang.",
+      "Der Boden kann selbst trocknen.",
+      "Ich habe das Wasser getrunken."
+    ],
+    feedback: "Правильно! Безопасность: Schild «Rutschgefahr» (Осторожно, скользко)."
+  },
+  {
+    role: "🏢 Büroleiter (Офис / Администрация)",
+    text: "Können Sie den Kunden zurückrufen und einen Termin für morgen vereinbaren?",
+    correct: "Sehr gerne, ich rufe ihn gleich an und bestätige den Termin per E-Mail.",
+    options: [
+      "Sehr gerne, ich rufe ihn gleich an und bestätige den Termin per E-Mail.",
+      "Ich habe kein Telefon und keine Lust.",
+      "Der Termin war gestern schon vorbei."
+    ],
+    feedback: "Идеально! Вежливый деловой оборот (Sehr gerne) и глагол anrufen."
+  },
+  {
+    role: "🔧 Werkstattmeister (Автосервис / Механика)",
+    text: "Die Bremsen an diesem Fahrzeug müssen gewechselt werden. Haben wir die Teile da?",
+    correct: "Ja, die neuen Bremsbeläge liegen schon auf der Werkbank.",
+    options: [
+      "Ja, die neuen Bremsbeläge liegen schon auf der Werkbank.",
+      "Das Auto braucht keine Bremsen.",
+      "Ich fahre mit dem Auto in den Urlaub."
+    ],
+    feedback: "Richtig! Dativ с предлогом auf (auf der Werkbank) и техническая лексика."
+  },
+  {
+    role: "⚡ Obermonteur (Электромонтаж)",
+    text: "Ist die Leitung spannungsfrei geschaltet? Haben Sie nachgemessen?",
+    correct: "Ja, ich habe mit dem Duspol geprüft. Es liegt keine Spannung an.",
+    options: [
+      "Ja, ich habe mit dem Duspol geprüft. Es liegt keine Spannung an.",
+      "Strom kann man mit den Fingern fühlen.",
+      "Die Lampe leuchtet sehr hell."
+    ],
+    feedback: "Отлично! 5 правил электробезопасности: spannungsfrei schalten и прибор Duspol."
+  },
+  {
+    role: "🛒 Filialleiter (Супермаркет / Ритейл)",
+    text: "Das Kühlregal für Milchprodukte ist fast leer. Füllen Sie bitte nach!",
+    correct: "Selbstverständlich, ich hole die neue Ware sofort aus dem Kühlraum.",
+    options: [
+      "Selbstverständlich, ich hole die neue Ware sofort aus dem Kühlraum.",
+      "Die Kunden brauchen keine Milch.",
+      "Das Regal ist viel zu kalt."
+    ],
+    feedback: "Супер! nachfüllen (пополнять) и Kühlraum (холодильная камера)."
+  },
+  {
+    role: "🌳 Vorarbeiter (Садоводство / Ландшафт)",
+    text: "Die Hecke muss vor dem Regen geschnitten werden. Ist die Heckenschere bereit?",
+    correct: "Ja, der Akku ist voll geladen und die Klingen sind geölt.",
+    options: [
+      "Ja, der Akku ist voll geladen und die Klingen sind geölt.",
+      "Die Hecke wächst im Winter nicht.",
+      "Regen ist gut für meine Schuhe."
+    ],
+    feedback: "Превосходно! Пассивное состояние (voll geladen, geölt) и рабочий контекст."
+  }
+];
+
 // === GAME LEVELS & MASTERY ENGINE ===
 var currentGameLevel = 1;
 
@@ -3086,26 +3692,52 @@ var levelConfig = [
   { id: 3, cefr: "A2", class: "lvl-3", title: "Завод и процессы", meta: "40 слов · сортировка, сборка, цех" },
   { id: 4, cefr: "A2/B1", class: "lvl-4", title: "Безопасность и СИЗ", meta: "88 слов · защита, Not-Aus, правила" },
   { id: 5, cefr: "B1", class: "lvl-5", title: "Собеседование и карьера", meta: "147 слов · договор, опыт, качества" },
-  { id: 6, cefr: "MIX", class: "lvl-6", title: "👑 Марафон 441", meta: "Вся база слов · случайный микс" }
+  { id: 6, cefr: "MIX", class: "lvl-mix", title: "⭐ Мега-марафон (все слова)", meta: "441 слово · без ограничений" }
 ];
 
 var gameMetaInfo = {
-  choice: { title: "Слово → перевод", badge: "01", desc: "Выберите точное русское значение слова" },
-  reverse: { title: "Перевод → слово", badge: "02", desc: "Вспомните немецкое слово без подсказок" },
-  phrase: { title: "Вставь слово", badge: "03", desc: "Дополните пропуск в живой рабочей фразе" },
-  order: { title: "Порядок слов", badge: "04", desc: "Соберите предложение с глаголом на 2-м месте" },
-  situation: { title: "Выбери реплику", badge: "05", desc: "Найдите лучший ответ в рабочей ситуации" },
-  pairs: { title: "Быстрые пары", badge: "06", desc: "Соедините слова и переводы на скорость" },
-  articles: { title: "Блиц der / die / das", badge: "07", desc: "Определите артикль на скорость со светофором" },
-  audio_spy: { title: "Аудио-радар", badge: "08", desc: "Распознайте немецкую речь на слух без текста" },
+  choice: { title: "Слово → перевод", badge: "01", desc: "Выберите правильный русский перевод" },
+  reverse: { title: "Перевод → слово", badge: "02", desc: "Вспомните немецкое слово" },
+  phrase: { title: "Вставь слово", badge: "03", desc: "Заполните пропуск в рабочей фразе" },
+  order: { title: "Порядок слов", badge: "04", desc: "Соберите предложение в грамматически верном порядке" },
+  situation: { title: "Выбери реплику", badge: "05", desc: "Найдите лучший ответ для рабочей ситуации" },
+  pairs: { title: "Быстрые пары", badge: "06", desc: "Соедините немецкие слова с переводом на скорость" },
+  articles: { title: "Блиц der / die / das", badge: "07", desc: "Молниеносный выбор рода с подсказками" },
+  audio_spy: { title: "Аудио-радар", badge: "08", desc: "Восприятие фраз на слух без текста" },
   boss_shift: { title: "Рабочая смена", badge: "09", desc: "Диалоговый квест с шефом на объекте" },
-  mistakes: { title: "Банк ошибок", badge: "10", desc: "Точечный реванш по вашим прошлым ошибкам" }
+  mistakes: { title: "Банк ошибок", badge: "10", desc: "Точечный реванш по вашим ошибкам" }
 };
 
+// === WORD MASTERY ENGINE ===
+function markWordMastered(wordText) {
+  if (!wordText || typeof wordText !== 'string') return;
+  try {
+    var clean = wordText.trim().replace(/[.,!?:;«»]/g, '');
+    var mastered = JSON.parse(localStorage.getItem('dt_games_mastered_words') || '{}');
+    mastered[clean] = (mastered[clean] || 0) + 1;
+    localStorage.setItem('dt_games_mastered_words', JSON.stringify(mastered));
+    updateMasteryDisplay();
+  } catch(e) {}
+}
+
+function updateMasteryDisplay() {
+  try {
+    var mastered = JSON.parse(localStorage.getItem('dt_games_mastered_words') || '{}');
+    var count = Object.keys(mastered).length;
+    var total = 441;
+    var pct = Math.min(100, Math.round((count / total) * 100));
+    var disp = $('gamesMasteryDisplay');
+    if (disp) disp.textContent = count + " / " + total + " слов (" + pct + "%)";
+    var bar = $('gamesMasteryBar');
+    if (bar) bar.style.width = pct + "%";
+  } catch(e) {}
+}
+
+// === STARS ENGINE ===
 function getGameStars(gameKey, lvl) {
   try {
-    var store = JSON.parse(localStorage.getItem('dt_game_stars') || '{}');
-    return store[gameKey + '_' + lvl] || 0;
+    var key = 'dt_stars_' + gameKey + '_lvl' + lvl;
+    return parseInt(localStorage.getItem(key) || '0', 10);
   } catch(e) {
     return 0;
   }
@@ -3113,48 +3745,23 @@ function getGameStars(gameKey, lvl) {
 
 function saveGameStars(gameKey, lvl, stars) {
   try {
-    var store = JSON.parse(localStorage.getItem('dt_game_stars') || '{}');
-    var cur = store[gameKey + '_' + lvl] || 0;
-    if (stars > cur) {
-      store[gameKey + '_' + lvl] = stars;
-      localStorage.setItem('dt_game_stars', JSON.stringify(store));
+    var key = 'dt_stars_' + gameKey + '_lvl' + lvl;
+    var current = getGameStars(gameKey, lvl);
+    if (stars > current) {
+      localStorage.setItem(key, String(stars));
     }
   } catch(e) {}
 }
 
 function renderStarsString(count) {
-  if (count === 3) return '⭐⭐⭐';
-  if (count === 2) return '⭐⭐—';
-  if (count === 1) return '⭐——';
-  return '———';
+  var s = '';
+  for (var i = 0; i < 3; i++) {
+    s += (i < count ? '⭐' : '☆');
+  }
+  return s;
 }
 
-function markWordMastered(wordText) {
-  try {
-    var store = JSON.parse(localStorage.getItem('dt_word_mastery') || '{}');
-    var clean = (wordText || '').split('·')[0].trim();
-    if (!clean) return;
-    store[clean] = (store[clean] || 0) + 1;
-    localStorage.setItem('dt_word_mastery', JSON.stringify(store));
-    updateMasteryDisplay();
-  } catch(e) {}
-}
-
-function updateMasteryDisplay() {
-  try {
-    var store = JSON.parse(localStorage.getItem('dt_word_mastery') || '{}');
-    var count = 0;
-    for (var k in store) {
-      if (store[k] >= 2) count++;
-    }
-    var total = (typeof fullDeck === 'function' ? fullDeck().length : 441) || 441;
-    var el = document.getElementById('gamesMasteryDisplay');
-    var bar = document.getElementById('gamesMasteryBar');
-    if (el) el.textContent = count + ' / ' + total + ' слов';
-    if (bar) bar.style.width = Math.min(100, Math.round((count / total) * 100)) + '%';
-  } catch(e) {}
-}
-
+// === LEVEL DECK GENERATOR ===
 function getLevelDeck(lvl) {
   var all = fullDeck();
   if (!lvl || lvl === 6 || lvl === 'all' || lvl === 0) return all;
@@ -3177,9 +3784,19 @@ function getLevelDeck(lvl) {
   return all;
 }
 
+// === LEVEL PICKER DRAWER ===
 function showGameLevelPicker(gameKey) {
   currentGame = gameKey || currentGame || 'choice';
   var meta = gameMetaInfo[currentGame] || { title: "Тренировка", badge: "01", desc: "Выберите уровень" };
+  
+  if (window.innerWidth <= 700) {
+    var gamesEl = $('games');
+    if (gamesEl) gamesEl.classList.add('game-screen-play');
+    var backBtn = $('gameMenuBack');
+    if (backBtn) backBtn.hidden = false;
+    var heading = $('mobileGameHeading');
+    if (heading) heading.textContent = meta.title;
+  }
   
   var titleEl = $("gameTitle");
   if (titleEl) titleEl.textContent = meta.title;
@@ -3205,7 +3822,7 @@ function showGameLevelPicker(gameKey) {
     var starsCount = getGameStars(currentGame, cfg.id);
     var starsStr = renderStarsString(starsCount);
     return [
-      '<button type="button" class="level-card" onclick="startLevel(' + cfg.id + ')">',
+      '<button type="button" class="level-card" data-level="' + cfg.id + '" onclick="startLevel(' + cfg.id + ')">',
         '<div class="level-card-left">',
           '<span class="level-pill ' + cfg.class + '">' + cfg.cefr + '</span>',
           '<div>',
@@ -3237,6 +3854,16 @@ function showGameLevelPicker(gameKey) {
       '</div>',
     '</div>'
   ].join('');
+
+  // Event delegation on body to guarantee 100% click execution across mobile and desktop
+  body.onclick = function(e) {
+    var card = e.target && e.target.closest && e.target.closest('.level-card');
+    if (card) {
+      if (e) e.preventDefault();
+      var lvl = parseInt(card.getAttribute('data-level'), 10) || 1;
+      startLevel(lvl);
+    }
+  };
 }
 window.showGameLevelPicker = showGameLevelPicker;
 
@@ -3247,6 +3874,14 @@ function startLevel(lvl) {
   gameTotal = (currentGame === 'pairs' ? 6 : (currentGame === 'order' ? 8 : 10));
   gameCombo = 0;
   maxGameCombo = 0;
+  gameLocked = false;
+  
+  if (window.innerWidth <= 700) {
+    var gamesEl = $('games');
+    if (gamesEl) gamesEl.classList.add('game-screen-play');
+    var backBtn = $('gameMenuBack');
+    if (backBtn) backBtn.hidden = false;
+  }
   
   var meta = gameMetaInfo[currentGame] || { title: "Тренировка" };
   var cfg = levelConfig.find(function(c) { return c.id === currentGameLevel; }) || levelConfig[0];
@@ -3267,7 +3902,6 @@ function startLevel(lvl) {
 }
 window.startLevel = startLevel;
 
-
 // === UPGRADED GAME COMPLETE WITH STARS & LEVEL PROGRESSION ===
 function renderGameComplete(title, score, total) {
   $("gameTitle").textContent = "Раунд завершён";
@@ -3282,37 +3916,49 @@ function renderGameComplete(title, score, total) {
   saveGameStars(currentGame, currentGameLevel, earnedStars);
 
   var starLabels = ['Попробуйте ещё раз', 'Хорошо! ⭐', 'Отлично! ⭐⭐', 'Идеально! ⭐⭐⭐'];
-  var starsHtml = [
-    '<div class="stars-award-box">',
-      '<div class="stars-award-stars">' + renderStarsString(earnedStars) + '</div>',
-      '<div class="stars-award-label">' + starLabels[earnedStars] + '</div>',
-    '</div>'
-  ].join('');
+  var label = starLabels[earnedStars];
+  var starsDisplay = renderStarsString(earnedStars);
 
-  var comboNotice = maxGameCombo >= 2 ? '<div style="margin-top:6px;font-size:11.5px;color:#f59e0b;font-weight:700;">🔥 Лучшая серия: ' + maxGameCombo + ' подряд!</div>' : '';
-  
-  var nextLvl = (currentGameLevel < 5 ? (currentGameLevel + 1) : 1);
-  var actionsHtml = [
-    '<div class="game-complete-actions">',
-      (currentGame !== 'mistakes' ? '<button type="button" class="primary" onclick="startLevel(' + nextLvl + ')">Уровень ' + nextLvl + ' →</button>' : '<button type="button" class="primary" onclick="startLevel(1)">Повторить 🔄</button>'),
-      '<button type="button" onclick="showGameLevelPicker(currentGame)">Все уровни 📋</button>',
-    '</div>'
-  ].join('');
+  var nextLvl = (currentGameLevel < 6) ? (currentGameLevel + 1) : 1;
 
-  $("gameBody").innerHTML = [
-    '<div class="game-complete">',
-      '<div class="complete-ring">' + percent + '%</div>',
-      '<strong>' + title + '</strong>',
-      starsHtml,
-      '<p>Результат: ' + score + ' из ' + total + '. ' + (percent >= 80 ? 'Великолепно! Материал уровня надёжно закреплён.' : 'Хорошая тренировка! Повторите раунд для автоматизма.') + '</p>',
-      comboNotice,
-      actionsHtml,
+  var body = $("gameBody");
+  body.innerHTML = [
+    '<div class="game-complete-card">',
+      '<div class="stars-award-box">',
+        '<div class="stars-award-row">' + starsDisplay + '</div>',
+        '<div class="stars-award-label">' + label + '</div>',
+      '</div>',
+      '<div class="game-complete-circle">',
+        '<b>' + percent + '%</b>',
+        '<span>' + score + ' из ' + total + '</span>',
+      '</div>',
+      '<h3>' + title + '</h3>',
+      '<p>Результат сохранён. Слова занесены в прогресс освоения.</p>',
+      '<div class="complete-actions">',
+        (currentGame !== 'mistakes' ? '<button type="button" class="deck-action primary-deck" id="btnNextLevel">Следующий уровень (' + nextLvl + ') →</button>' : ''),
+        '<button type="button" class="deck-action" id="btnChooseLevel" style="border:1px solid rgba(226,194,126,0.35);">Выбрать уровень 📋</button>',
+        '<button type="button" class="deck-action" id="btnRepeatLevel">Повторить этот раунд ↺</button>',
+      '</div>',
     '</div>'
   ].join('');
 
   $("gameNext").classList.remove("show");
+
+  var bNext = $('btnNextLevel');
+  if (bNext) {
+    bNext.onclick = function() { startLevel(nextLvl); };
+  }
+  var bChoose = $('btnChooseLevel');
+  if (bChoose) {
+    bChoose.onclick = function() { showGameLevelPicker(currentGame); };
+  }
+  var bRepeat = $('btnRepeatLevel');
+  if (bRepeat) {
+    bRepeat.onclick = function() { startLevel(currentGameLevel); };
+  }
 }
 
+// === ANSWER ROUND (CORE ENGINE) ===
 function answerRound(title, prompt, options, correct, success) {
   if (gameRound >= gameTotal) {
     renderGameComplete(title, gamePoints, gameTotal);
@@ -3331,24 +3977,29 @@ function answerRound(title, prompt, options, correct, success) {
       if (gameLocked) return;
       gameLocked = true;
       grid.querySelectorAll("button").forEach(function(x) { x.disabled = true; });
+      var targetGerman = (title === "Слово → перевод" ? prompt : correct);
       if (text === correct) {
         b.classList.add("correct");
         gamePoints++;
         updateCombo(true);
         playGameSound('correct');
-        markWordMastered(correct);
+        markWordMastered(targetGerman);
         $("gameFeedback").innerHTML = "<strong>Richtig. </strong>" + success;
-        speakGerman(correct);
+        speakGerman(targetGerman);
       } else {
         b.classList.add("wrong");
         updateCombo(false);
         playGameSound('wrong');
-        addMistakeToBank({ de: correct, ru: prompt, hint: success });
+        addMistakeToBank({ 
+          de: targetGerman, 
+          ru: (title === "Слово → перевод" ? correct : prompt), 
+          hint: success 
+        });
         Array.from(grid.children).forEach(function(x) {
           if (x.textContent === correct) x.classList.add("correct");
         });
         $("gameFeedback").innerHTML = "<strong>Правильный ответ: </strong>" + correct + "<br><small style='color:#f59e0b;'>" + success + "</small>";
-        speakGerman(correct);
+        speakGerman(targetGerman);
       }
       $("gameNext").classList.add("show");
       $("gameScore").textContent = "Задание " + (gameRound + 1) + " / " + gameTotal + " · " + gamePoints + " баллов";
@@ -3357,6 +4008,7 @@ function answerRound(title, prompt, options, correct, success) {
   });
 }
 
+// === GAME 01: WORD -> TRANSLATION ===
 function renderChoiceGame() {
   gameTotal = 10;
   if (gameRound >= gameTotal) {
@@ -3374,6 +4026,7 @@ function renderChoiceGame() {
   answerRound("Слово → перевод", target[0], wrong.map(function(w){ return w[1]; }).concat([target[1]]), target[1], target[3]);
 }
 
+// === GAME 02: TRANSLATION -> WORD ===
 function renderReverseGame() {
   gameTotal = 10;
   if (gameRound >= gameTotal) {
@@ -3391,6 +4044,7 @@ function renderReverseGame() {
   answerRound("Перевод → слово", target[1], wrong.map(function(w){ return w[0]; }).concat([target[0]]), target[0], target[3]);
 }
 
+// === GAME 03: FILL IN THE BLANK ===
 function renderPhraseGame() {
   gameTotal = 10;
   if (gameRound >= gameTotal) {
@@ -3420,19 +4074,10 @@ function renderPhraseGame() {
     .map(function(w){ return w[0].replace(/^(der|die|das)\s+/i, ''); });
   
   var options = shuffle([answerWord].concat(distractors));
-  answerRound("Вставь слово", masked, options, answerWord, sentence + '<br><small style="color:#94a3b8;">' + target[4] + '</small>');
+  answerRound("Вставь слово", masked, options, answerWord, sentence + "<br><small style='color:#94a3b8;'>" + target[4] + "</small>");
 }
 
-function renderSituationGame() {
-  gameTotal = 10;
-  if (gameRound >= gameTotal) {
-    renderGameComplete("Реплики готовы к разговору", gamePoints, gameTotal);
-    return;
-  }
-  var t = situationTasks[gameRound % situationTasks.length];
-  answerRound("Выбери реплику", t[0], t[2], t[1], t[1]);
-}
-
+// === GAME 04: WORD ORDER ===
 function renderOrderGame() {
   gameTotal = 8;
   if (gameRound >= gameTotal) {
@@ -3459,64 +4104,55 @@ function renderOrderGame() {
     var b = document.createElement("button");
     b.className = "token-btn";
     b.textContent = tok.text;
-    b.dataset.id = tok.id;
     b.onclick = function() {
-      if (gameLocked || b.classList.contains("used")) return;
-      b.classList.add("used");
+      if (b.disabled) return;
+      b.disabled = true;
+      playGameSound('click');
       orderChosen.push(tok);
-      renderChosenTokens();
+      var build = $("sentenceBuild");
+      if (orderChosen.length === 1) build.innerHTML = "";
+      var tag = document.createElement("span");
+      tag.className = "sentence-word";
+      tag.textContent = tok.text;
+      build.appendChild(tag);
+      
       if (orderChosen.length === target.length) {
-        gameLocked = true;
-        var answer = orderChosen.map(function(x) { return x.text; });
-        var ok = answer.join("|") === target.join("|");
-        if (ok) {
+        var correct = orderChosen.every(function(x, idx) { return x.id === idx; });
+        if (correct) {
           gamePoints++;
           updateCombo(true);
           playGameSound('correct');
           markWordMastered(item[0]);
-          $("gameFeedback").innerHTML = "<strong>Richtig. </strong>" + target.join(" ") + ".";
+          $("gameFeedback").innerHTML = "<strong>Perfekt! </strong>" + item[3];
           speakGerman(target.join(" "));
           $("gameNext").classList.add("show");
         } else {
           updateCombo(false);
           playGameSound('wrong');
           addMistakeToBank({ de: target.join(" "), ru: item[4], hint: "Порядок слов" });
-          $("gameFeedback").innerHTML = "<strong>Ещё одна попытка. </strong>Правильно: " + target.join(" ") + ".";
-          setTimeout(function() {
-            gameLocked = false;
-            orderChosen = [];
-            Array.from($("tokenBank").children).forEach(function(x) { x.classList.remove("used"); });
-            renderChosenTokens();
-          }, 1100);
+          $("gameFeedback").innerHTML = "<strong>Правильный порядок: </strong>" + item[3];
+          speakGerman(target.join(" "));
+          $("gameNext").classList.add("show");
         }
+        $("gameScore").textContent = "Задание " + (gameRound + 1) + " / " + gameTotal + " · " + gamePoints + " баллов";
       }
     };
     $("tokenBank").appendChild(b);
   });
-
-  function renderChosenTokens() {
-    var box = $("sentenceBuild");
-    box.innerHTML = "";
-    if (!orderChosen.length) {
-      box.innerHTML = "<span class=fine>Нажимайте на слова по порядку</span>";
-      return;
-    }
-    orderChosen.forEach(function(tok, idx) {
-      var b = document.createElement("button");
-      b.className = "token-btn";
-      b.textContent = tok.text;
-      b.onclick = function() {
-        if (gameLocked) return;
-        orderChosen.splice(idx, 1);
-        var orig = $("tokenBank").querySelector('[data-id="' + tok.id + '"]');
-        if (orig) orig.classList.remove("used");
-        renderChosenTokens();
-      };
-      box.appendChild(b);
-    });
-  }
 }
 
+// === GAME 05: SITUATION ===
+function renderSituationGame() {
+  gameTotal = 10;
+  if (gameRound >= gameTotal) {
+    renderGameComplete("Реплики готовы к разговору", gamePoints, gameTotal);
+    return;
+  }
+  var t = situationTasks[gameRound % situationTasks.length];
+  answerRound("Выбери реплику", t[0], t[2], t[1], t[1]);
+}
+
+// === GAME 06: QUICK PAIRS ===
 function renderPairsGame() {
   gameHeader("Быстрые пары", 6);
   var deck = getLevelDeck(currentGameLevel);
@@ -3561,34 +4197,353 @@ function renderPairsGame() {
         playGameSound('correct');
         markWordMastered(item.key);
         speakGerman(item.key);
-        $("gameScore").textContent = (6 - pairsLeft) + " / 6 пар · " + gamePoints + " баллов";
-        $("gameProgress").style.width = Math.round(((6 - pairsLeft) / 6) * 100) + "%";
-        if (!pairsLeft) {
-          $("gameFeedback").innerHTML = "<strong>Все пары найдены! 🏆</strong> Отличная зрительная реакция.";
-          renderGameComplete("Все пары найдены!", gamePoints, 6);
+        $("gameScore").textContent = "Осталось пар: " + pairsLeft + " · " + gamePoints + " баллов";
+        if (pairsLeft === 0) {
+          $("gameFeedback").innerHTML = "<strong>Отлично! </strong>Все 6 пар собраны.";
+          $("gameNext").classList.add("show");
+          renderGameComplete("Все пары соединены", gamePoints, 6);
         }
       } else {
-        var old = pairFirst;
-        old.classList.remove("selected");
+        pairFirst.classList.add("wrong");
         b.classList.add("wrong");
-        old.classList.add("wrong");
-        pairFirst = null;
         updateCombo(false);
         playGameSound('wrong');
+        var prev = pairFirst;
         setTimeout(function() {
+          prev.classList.remove("selected", "wrong");
           b.classList.remove("wrong");
-          old.classList.remove("wrong");
-        }, 450);
+        }, 500);
+        pairFirst = null;
       }
     };
     $("pairGrid").appendChild(b);
   });
 }
 
-function startGame(type) {
-  showGameLevelPicker(type);
+// === GAME 07: ARTICLES BLITZ (DER / DIE / DAS) ===
+function renderArticlesGame() {
+  gameTotal = 10;
+  if (gameRound >= gameTotal) {
+    renderGameComplete("Артикли der / die / das отработаны", gamePoints, gameTotal);
+    return;
+  }
+  gameHeader("Блиц der / die / das", gameTotal);
+
+  var deck = getLevelDeck(currentGameLevel).filter(function(w) {
+    return w[0] && (w[0].indexOf('der ') === 0 || w[0].indexOf('die ') === 0 || w[0].indexOf('das ') === 0);
+  });
+  if (!deck.length) {
+    deck = fullDeck().filter(function(w) {
+      return w[0] && (w[0].indexOf('der ') === 0 || w[0].indexOf('die ') === 0 || w[0].indexOf('das ') === 0);
+    });
+  }
+  if (!deck.length) deck = vocabCore;
+
+  var target = deck[(gameRound * 11 + Math.floor(Math.random() * deck.length)) % deck.length];
+  var parts = target[0].split(' ');
+  var correctArticle = parts[0];
+  var noun = parts.slice(1).join(' ');
+  var translation = target[1];
+
+  var body = $("gameBody");
+  body.innerHTML = [
+    '<div class="article-prompt-card">',
+      '<div class="article-noun">' + noun + '</div>',
+      '<div class="article-translation">' + translation + '</div>',
+    '</div>',
+    '<div class="article-grid">',
+      '<button type="button" class="article-btn der" data-art="der">der<small>мужской</small></button>',
+      '<button type="button" class="article-btn die" data-art="die">die<small>женский</small></button>',
+      '<button type="button" class="article-btn das" data-art="das">das<small>средний</small></button>',
+    '</div>',
+    '<div class="game-feedback" id="gameFeedback">Выберите артикль: der, die или das.</div>'
+  ].join('');
+
+  var btns = body.querySelectorAll('.article-btn');
+  btns.forEach(function(btn) {
+    btn.onclick = function() {
+      if (gameLocked) return;
+      gameLocked = true;
+      btns.forEach(function(b) { b.disabled = true; });
+
+      var chosen = btn.dataset.art;
+      var mnemonic = getArticleMnemonic(correctArticle, noun);
+
+      if (chosen === correctArticle) {
+        btn.style.boxShadow = '0 0 25px #10b981, inset 0 0 10px #10b981';
+        btn.style.borderColor = '#10b981';
+        gamePoints++;
+        updateCombo(true);
+        playGameSound('correct');
+        markWordMastered(target[0]);
+        $("gameFeedback").innerHTML = '<strong>Richtig!</strong> ' + correctArticle.toUpperCase() + ' ' + noun + '.<br><small style="color:#94a3b8;">' + mnemonic + '</small>';
+        speakGerman(correctArticle + ' ' + noun);
+      } else {
+        btn.style.boxShadow = '0 0 25px #ef4444';
+        btn.style.opacity = '0.5';
+        updateCombo(false);
+        playGameSound('wrong');
+        addMistakeToBank({ de: target[0], ru: target[1], art: correctArticle, hint: mnemonic });
+        
+        var correctBtn = body.querySelector('.article-btn.' + correctArticle);
+        if (correctBtn) {
+          correctBtn.style.boxShadow = '0 0 25px #10b981, inset 0 0 10px #10b981';
+          correctBtn.style.borderColor = '#10b981';
+        }
+        $("gameFeedback").innerHTML = '<strong>Правильно: ' + correctArticle.toUpperCase() + ' ' + noun + '</strong>.<br><small style="color:#f59e0b;">' + mnemonic + '</small>';
+        speakGerman(correctArticle + ' ' + noun);
+      }
+      $("gameNext").classList.add("show");
+      $("gameScore").textContent = "Задание " + (gameRound + 1) + " / " + gameTotal + " · " + gamePoints + " баллов";
+    };
+  });
 }
 
+// === GAME 08: AUDIO SPY / RADAR ===
+function renderAudioSpyGame() {
+  gameTotal = 10;
+  if (gameRound >= gameTotal) {
+    renderGameComplete("Аудирование успешно закреплено", gamePoints, gameTotal);
+    return;
+  }
+  gameHeader("Аудио-радар", gameTotal);
+
+  var deck = getLevelDeck(currentGameLevel).filter(function(w) { return w[3] && w[4]; });
+  if (!deck.length) deck = fullDeck().filter(function(w) { return w[3] && w[4]; });
+  if (!deck.length) deck = vocabCore;
+  var target = deck[(gameRound * 7 + Math.floor(Math.random() * deck.length)) % deck.length];
+  var germanAudio = target[3];
+  var correctRu = target[4];
+
+  var wrongOptions = shuffle(deck.filter(function(w) { return w[4] !== correctRu; }))
+    .slice(0, 2)
+    .map(function(w) { return w[4]; });
+  var options = shuffle([correctRu].concat(wrongOptions));
+
+  var body = $("gameBody");
+  body.innerHTML = [
+    '<div class="audio-radar-card">',
+      '<button type="button" class="audio-radar-btn" id="radarPlayBtn" title="Прослушать фразу">',
+        '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>',
+      '</button>',
+      '<div style="font-weight:700;font-size:13px;color:#f8fafc;margin-bottom:8px;">Слушайте немецкую фразу</div>',
+      '<div class="audio-controls-row">',
+        '<button type="button" class="audio-sub-btn" id="radarReplayNorm">0.8x 🔊 Повтор</button>',
+        '<button type="button" class="audio-sub-btn" id="radarReplaySlow">0.7x 🐢 Медленно</button>',
+      '</div>',
+    '</div>',
+    '<div class="answer-grid"></div>',
+    '<div class="game-feedback" id="gameFeedback">Послушайте и выберите верный русский перевод.</div>'
+  ].join('');
+
+  var playBtn = $('radarPlayBtn');
+  function triggerAudio(speedOverride) {
+    if (speedOverride) {
+      var prev = window.selectedTtsSpeed;
+      window.selectedTtsSpeed = speedOverride;
+      speakGerman(germanAudio, playBtn);
+      setTimeout(function() { window.selectedTtsSpeed = prev; }, 1000);
+    } else {
+      speakGerman(germanAudio, playBtn);
+    }
+  }
+
+  playBtn.onclick = function() { triggerAudio(); };
+  $('radarReplayNorm').onclick = function() { triggerAudio('-20%'); };
+  $('radarReplaySlow').onclick = function() { triggerAudio('-28%'); };
+
+  // Auto-play audio on question load
+  setTimeout(function() { triggerAudio(); }, 200);
+
+  var grid = body.querySelector(".answer-grid");
+  options.forEach(function(optText) {
+    var b = document.createElement("button");
+    b.className = "answer-btn";
+    b.textContent = optText;
+    b.onclick = function() {
+      if (gameLocked) return;
+      gameLocked = true;
+      grid.querySelectorAll("button").forEach(function(x) { x.disabled = true; });
+
+      if (optText === correctRu) {
+        b.classList.add("correct");
+        gamePoints++;
+        updateCombo(true);
+        playGameSound('correct');
+        markWordMastered(target[0]);
+        $("gameFeedback").innerHTML = '<strong>Richtig!</strong> ' + germanAudio + '<br><small style="color:#94a3b8;">' + correctRu + '</small>';
+      } else {
+        b.classList.add("wrong");
+        updateCombo(false);
+        playGameSound('wrong');
+        addMistakeToBank({ de: germanAudio, ru: correctRu, hint: 'Аудиофраза' });
+        Array.from(grid.children).forEach(function(x) {
+          if (x.textContent === correctRu) x.classList.add("correct");
+        });
+        $("gameFeedback").innerHTML = '<strong>Правильно:</strong> ' + germanAudio + '<br><small style="color:#f59e0b;">' + correctRu + '</small>';
+      }
+      speakGerman(germanAudio);
+      $("gameNext").classList.add("show");
+      $("gameScore").textContent = "Задание " + (gameRound + 1) + " / " + gameTotal + " · " + gamePoints + " баллов";
+    };
+    grid.appendChild(b);
+  });
+}
+
+// === GAME 09: BOSS SHIFT (WORKPLACE QUEST) ===
+function renderBossShiftGame() {
+  gameTotal = 10;
+  if (gameRound >= gameTotal) {
+    renderGameComplete("Рабочая смена успешно завершена!", gamePoints, gameTotal);
+    return;
+  }
+  gameHeader("Рабочая смена", gameTotal);
+
+  var scenario = bossShiftScenarios[gameRound % bossShiftScenarios.length];
+  var body = $("gameBody");
+  body.innerHTML = [
+    '<div class="boss-dialog-card">',
+      '<div class="boss-head">',
+        '<div class="boss-avatar">👔</div>',
+        '<div>',
+          '<div class="boss-role">' + scenario.role + '</div>',
+          '<button type="button" class="audio-sub-btn" id="speakBossRoleBtn" style="padding:2px 8px;font-size:10px;margin-top:2px;">🔊 Озвучить реплику</button>',
+        '</div>',
+      '</div>',
+      '<div class="boss-speech">«' + scenario.text + '»</div>',
+    '</div>',
+    '<div class="answer-grid"></div>',
+    '<div class="game-feedback" id="gameFeedback">Выберите лучший профессиональный ответ шефу.</div>'
+  ].join('');
+
+  var speakBtn = $('speakBossRoleBtn');
+  speakBtn.onclick = function() {
+    speakGerman(scenario.text, speakBtn);
+  };
+  // Autoplay boss speech
+  setTimeout(function() { speakGerman(scenario.text, speakBtn); }, 250);
+
+  var grid = body.querySelector(".answer-grid");
+  shuffle(scenario.options.slice()).forEach(function(optText) {
+    var b = document.createElement("button");
+    b.className = "answer-btn";
+    b.textContent = optText;
+    b.onclick = function() {
+      if (gameLocked) return;
+      gameLocked = true;
+      grid.querySelectorAll("button").forEach(function(x) { x.disabled = true; });
+
+      if (optText === scenario.correct) {
+        b.classList.add("correct");
+        gamePoints++;
+        updateCombo(true);
+        playGameSound('correct');
+        $("gameFeedback").innerHTML = '<strong>Richtig!</strong> ' + scenario.feedback;
+        speakGerman(scenario.correct);
+      } else {
+        b.classList.add("wrong");
+        updateCombo(false);
+        playGameSound('wrong');
+        addMistakeToBank({ de: scenario.correct, ru: scenario.text, hint: scenario.feedback });
+        Array.from(grid.children).forEach(function(x) {
+          if (x.textContent === scenario.correct) x.classList.add("correct");
+        });
+        $("gameFeedback").innerHTML = '<strong>Лучший ответ:</strong> ' + scenario.correct + '<br><small style="color:#f59e0b;">' + scenario.feedback + '</small>';
+        speakGerman(scenario.correct);
+      }
+      $("gameNext").classList.add("show");
+      $("gameScore").textContent = "Задание " + (gameRound + 1) + " / " + gameTotal + " · " + gamePoints + " баллов";
+    };
+    grid.appendChild(b);
+  });
+}
+
+// === GAME 10: MISTAKES BANK (FEHLERBANK) ===
+function renderMistakesGame() {
+  var bank = getMistakesBank();
+  if (!bank.length) {
+    gameHeader("Банк ошибок", 1);
+    var body = $("gameBody");
+    body.innerHTML = [
+      '<div style="text-align:center;padding:32px 16px;background:rgba(0,0,0,0.3);border-radius:20px;border:1px solid rgba(16,185,129,0.35);">',
+        '<div style="font-size:42px;margin-bottom:12px;">🏆</div>',
+        '<h3 style="font-size:18px;color:#10b981;margin-bottom:6px;">Банк ошибок пуст!</h3>',
+        '<p style="font-size:13px;color:#94a3b8;max-width:320px;margin:0 auto 16px;">Вы ответили на все задания безупречно. Если вы ошибетесь в других играх, слова попадут сюда для реванша.</p>',
+        '<button type="button" class="deck-action primary-deck" id="mistakesWarmupBtn" style="max-width:240px;margin:0 auto;">Пройти блиц артиклей</button>',
+      '</div>'
+    ].join('');
+    var wb = $('mistakesWarmupBtn');
+    if (wb) {
+      wb.onclick = function() {
+        showGameLevelPicker('articles');
+      };
+    }
+    $("gameNext").classList.remove("show");
+    $("gameScore").textContent = "Ошибок: 0";
+    return;
+  }
+
+  gameTotal = Math.min(bank.length, 10);
+  if (gameRound >= gameTotal) {
+    renderGameComplete("Реванш ошибок завершён!", gamePoints, gameTotal);
+    return;
+  }
+  gameHeader("Банк ошибок", gameTotal);
+
+  var target = bank[gameRound % bank.length];
+  var deck = fullDeck();
+  var wrong = shuffle(deck.filter(function(w) { return w[0] !== target.de; }))
+    .slice(0, 3)
+    .map(function(w) { return w[1]; });
+  var options = shuffle([target.ru].concat(wrong));
+
+  var body = $("gameBody");
+  body.innerHTML = [
+    '<div class="article-prompt-card" style="border-color:rgba(239,68,68,0.4);">',
+      '<div style="font-size:11px;font-weight:700;color:#ef4444;text-transform:uppercase;margin-bottom:4px;">🎯 Работа над ошибкой</div>',
+      '<div class="article-noun" style="font-size:32px;">' + target.de + '</div>',
+      '<div style="font-size:12px;color:#94a3b8;">' + (target.hint || 'Вспомните верное значение') + '</div>',
+    '</div>',
+    '<div class="answer-grid"></div>',
+    '<div class="game-feedback" id="gameFeedback">Выберите правильный перевод, чтобы сжечь эту ошибку.</div>'
+  ].join('');
+
+  var grid = body.querySelector(".answer-grid");
+  options.forEach(function(optText) {
+    var b = document.createElement("button");
+    b.className = "answer-btn";
+    b.textContent = optText;
+    b.onclick = function() {
+      if (gameLocked) return;
+      gameLocked = true;
+      grid.querySelectorAll("button").forEach(function(x) { x.disabled = true; });
+
+      if (optText === target.ru) {
+        b.classList.add("correct");
+        gamePoints++;
+        updateCombo(true);
+        playGameSound('correct');
+        removeMistakeFromBank(target.de);
+        $("gameFeedback").innerHTML = '<strong>Ошибка исправлена!</strong> Слово удалено из банка ошибок.';
+        speakGerman(target.de);
+      } else {
+        b.classList.add("wrong");
+        updateCombo(false);
+        playGameSound('wrong');
+        Array.from(grid.children).forEach(function(x) {
+          if (x.textContent === target.ru) x.classList.add("correct");
+        });
+        $("gameFeedback").innerHTML = '<strong>Правильно: ' + target.ru + '</strong><br>' + target.de;
+        speakGerman(target.de);
+      }
+      $("gameNext").classList.add("show");
+      $("gameScore").textContent = "Задание " + (gameRound + 1) + " / " + gameTotal + " · " + gamePoints + " баллов";
+    };
+    grid.appendChild(b);
+  });
+}
+
+// === CENTRAL GAME ROUTER ===
 function renderCurrentGame() {
   if (currentGame === "choice") renderChoiceGame();
   else if (currentGame === "reverse") renderReverseGame();
@@ -3603,8 +4558,11 @@ function renderCurrentGame() {
   else renderChoiceGame();
 }
 
-$("flashcard").onclick=revealWord;$("flashcard").onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();revealWord()}};var smb=$("speakMainWord");if(smb)smb.onclick=function(e){if(e)e.stopPropagation();if(activeDeck.length&&activeDeck[deckIndex])speakGerman(activeDeck[deckIndex][0],smb);};var seb=$("speakExample");if(seb)seb.onclick=function(e){if(e)e.stopPropagation();if(activeDeck.length&&activeDeck[deckIndex])speakGerman(activeDeck[deckIndex][3],seb);};$("wordReveal").onclick=revealWord;$("wordPrev").onclick=function(){nextWord(-1)};$("wordNext").onclick=function(){nextWord(1)};document.querySelectorAll("[data-rating]").forEach(function(b){b.onclick=function(){rateWord(b.dataset.rating)}});
-document.querySelectorAll("[data-deck]").forEach(function(b){b.onclick=function(){deckCategory=b.dataset.deck;document.querySelectorAll("[data-deck]").forEach(function(x){x.classList.toggle("active",x===b)});refreshDeck(true)}});document.querySelectorAll("[data-game]").forEach(function(b){b.onclick=function(){document.querySelectorAll("[data-game]").forEach(function(x){x.classList.toggle("active",x===b)});startGame(b.dataset.game)}});document.querySelectorAll("[data-goto]").forEach(function(b){b.onclick=function(){document.body.dataset.view=b.dataset.goto;var nav=document.querySelector('[data-nav="'+b.dataset.goto+'"]');if(nav)nav.click()}});$("gameNext").onclick=function(){if(currentGame==="pairs"){startGame("pairs");return}if(gameRound>=gameTotal){startGame(currentGame);return}gameRound++;renderCurrentGame()};refreshDeck(true);startGame("choice");
+function startGame(type) {
+  showGameLevelPicker(type);
+}
+
+document.querySelectorAll("[data-game]").forEach(function(b){b.onclick=function(){document.querySelectorAll("[data-game]").forEach(function(x){x.classList.toggle("active",x===b)});startGame(b.dataset.game)}});document.querySelectorAll("[data-goto]").forEach(function(b){b.onclick=function(){document.body.dataset.view=b.dataset.goto;var nav=document.querySelector('[data-nav="'+b.dataset.goto+'"]');if(nav)nav.click()}});$("gameNext").onclick=function(){if(currentGame==="pairs"){startGame("pairs");return}if(gameRound>=gameTotal){startGame(currentGame);return}gameRound++;renderCurrentGame()};refreshDeck(true);startGame("choice");
 function setStatus(t,s){status.textContent=t;dot.className='dot'+(s?' '+s:'')}
 function showError(t){error.textContent=t;error.classList.add('show');start.disabled=false;start.textContent='Я готов — начать голосовое занятие'}
 function clearSetupTimer(){if(setupTimer){clearTimeout(setupTimer);setupTimer=null}}
