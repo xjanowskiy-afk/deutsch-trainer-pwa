@@ -68,6 +68,14 @@ async def serve_icon_512():
 async def serve_apple_icon():
     return FileResponse(os.path.join(BASE_DIR, "apple-touch-icon.png"), media_type="image/png")
 
+@app.get("/favicon.ico")
+async def serve_favicon_ico():
+    return FileResponse(os.path.join(BASE_DIR, "favicon.ico"), media_type="image/x-icon")
+
+@app.get("/favicon.png")
+async def serve_favicon_png():
+    return FileResponse(os.path.join(BASE_DIR, "favicon.png"), media_type="image/png")
+
 @app.get("/api/user/{user_id}/progress")
 async def get_user_progress(user_id: str):
     user_file = os.path.join(DATA_DIR, f"{user_id}.json")
@@ -127,7 +135,7 @@ async def keep_alive():
     }
 
 @app.get("/api/tts")
-async def tts_endpoint(text: str, voice: str = "de-DE-FlorianMultilingualNeural", speed: str = "-14%"):
+async def tts_endpoint(text: str, voice: str = "de-DE-KatjaNeural", speed: str = "-20%"):
     clean = (text or "").strip()
     if not clean:
         raise HTTPException(status_code=400, detail="Text cannot be empty")
@@ -166,10 +174,10 @@ async def tts_endpoint(text: str, voice: str = "de-DE-FlorianMultilingualNeural"
 async def tts_voices():
     return {
         "voices": [
-            {"id": "de-DE-FlorianMultilingualNeural", "name": "Florian · Мужской, живой студийный (Microsoft v2)", "gender": "male", "default": True},
+            {"id": "de-DE-KatjaNeural", "name": "Katja · Женский, образцовая дикция и ясность (A1–B1)", "gender": "female", "default": True},
+            {"id": "de-DE-FlorianMultilingualNeural", "name": "Florian · Мужской, живой студийный (Microsoft v2)", "gender": "male"},
             {"id": "de-DE-SeraphinaMultilingualNeural", "name": "Seraphina · Женский, выразительный студийный (Microsoft v2)", "gender": "female"},
             {"id": "de-DE-ConradNeural", "name": "Conrad · Мужской, солидный и глубокий", "gender": "male"},
-            {"id": "de-DE-KatjaNeural", "name": "Katja · Женский, ясный и дружелюбный", "gender": "female"},
             {"id": "de-DE-KillianNeural", "name": "Killian · Мужской, классический", "gender": "male"}
         ]
     }
